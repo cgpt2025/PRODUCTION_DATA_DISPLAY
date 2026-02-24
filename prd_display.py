@@ -310,7 +310,7 @@ def index():
         r["Slot"] = hour_slot_label(r["Hour"])
 
     return render_template(
-        "production_hourly_single.html",
+        "production_hourly.html",
         plant=plant,
         rows=rows,
         plant_names=list(PLANTS.keys()),
