@@ -1,0 +1,595 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Meter Production – Hourly</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg:        #f4f5f7;
+            --surface:   #ffffff;
+            --border:    #e4e6ea;
+            --text:      #1c1e23;
+            --muted:     #74778a;
+            --accent:    #2563eb;
+            --accent-lt: #eff4ff;
+            --stripe:    #f9fafb;
+            --head-bg:   #111827;
+            --head-fg:   #ffffff;
+            --shadow:    0 1px 3px rgba(0,0,0,.07), 0 4px 16px rgba(0,0,0,.05);
+            --radius:    10px;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 28px 32px;
+        }
+
+        /* ── TOP BAR ─────────────────────────────────────── */
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .topbar-left h1 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+        }
+        .topbar-left .subtitle {
+            font-size: 0.78rem;
+            color: var(--muted);
+            margin-top: 3px;
+            font-family: 'DM Mono', monospace;
+        }
+
+        /* ── CONTROLS ────────────────────────────────────── */
+        .controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .ctrl-group {
+            display: flex;
+            align-items: center;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 0 14px;
+            height: 38px;
+            gap: 10px;
+            box-shadow: var(--shadow);
+        }
+        .ctrl-group label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: .06em;
+            white-space: nowrap;
+        }
+        .ctrl-divider {
+            width: 1px; height: 18px;
+            background: var(--border);
+        }
+        .ctrl-group select,
+        .ctrl-group input[type="date"],
+        .ctrl-group input[type="time"] {
+            border: none;
+            outline: none;
+            font-family: 'DM Mono', monospace;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--text);
+            background: transparent;
+            cursor: pointer;
+        }
+
+        /* logout link */
+        .btn-logout {
+            font-size: 0.75rem;
+            color: var(--muted);
+            text-decoration: none;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0 12px;
+            height: 38px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: var(--shadow);
+            transition: color .15s, border-color .15s;
+        }
+        .btn-logout:hover { color: var(--text); border-color: #c9cbd0; }
+
+        /* ── STATS PILLS ─────────────────────────────────── */
+        .stats-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 14px;
+            flex-wrap: wrap;
+        }
+        .stat-pill {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 5px 14px;
+            font-size: 0.76rem;
+            color: var(--muted);
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .stat-pill strong {
+            color: var(--text);
+            font-weight: 600;
+            font-family: 'DM Mono', monospace;
+        }
+
+        /* ── TABLE CARD ──────────────────────────────────── */
+        .table-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+        .table-scroll {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        .table-scroll::-webkit-scrollbar { width: 4px; }
+        .table-scroll::-webkit-scrollbar-track { background: transparent; }
+        .table-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+
+        table { width: 100%; border-collapse: collapse; font-size: 0.83rem; }
+
+        /* ── THEAD ───────────────────────────────────────── */
+        thead th {
+            background: var(--head-bg);
+            color: var(--head-fg);
+            padding: 11px 16px;
+            font-weight: 500;
+            font-size: 0.72rem;
+            letter-spacing: .05em;
+            text-transform: uppercase;
+            user-select: none;
+            cursor: pointer;
+            white-space: nowrap;
+            position: sticky;
+            top: 0;
+            z-index: 3;
+            transition: background .15s;
+        }
+        thead th:hover { background: #1f2937; }
+
+        thead th.col-proj { text-align: left; }
+        thead th.col-line { text-align: left; }
+        thead th.col-plant { text-align: left; }
+        thead th.col-slot { text-align: center; }
+        thead th.col-qty { text-align: right; }
+
+        .th-inner {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+        }
+        .th-inner.right { float: right; }
+
+        .sort-arrow {
+            display: inline-flex;
+            flex-direction: column;
+            gap: 2px;
+            opacity: .3;
+            transition: opacity .15s;
+            flex-shrink: 0;
+        }
+        .arr-up, .arr-down {
+            display: block; width: 0; height: 0;
+            border-left: 3px solid transparent;
+            border-right: 3px solid transparent;
+        }
+        .arr-up   { border-bottom: 4px solid currentColor; }
+        .arr-down { border-top:    4px solid currentColor; }
+
+        th.sort-asc  .sort-arrow,
+        th.sort-desc .sort-arrow { opacity: 1; }
+        th.sort-asc  .arr-down   { opacity: .2; }
+        th.sort-desc .arr-up     { opacity: .2; }
+
+        /* ── TBODY ───────────────────────────────────────── */
+        tbody tr { border-bottom: 1px solid var(--border); transition: background .1s; }
+        tbody tr:last-child { border-bottom: none; }
+        tbody tr:nth-child(even) { background: var(--stripe); }
+        tbody tr:hover,
+        tbody tr:nth-child(even):hover { background: var(--accent-lt); }
+
+        td { padding: 8px 16px; vertical-align: middle; }
+
+        td.proj {
+            font-family: 'DM Mono', monospace;
+            font-size: 0.77rem;
+            color: var(--accent);
+            font-weight: 500;
+        }
+        td.line  { font-weight: 500; }
+        td.plant-td { font-size: 0.78rem; color: var(--muted); }
+        td.slot  {
+            text-align: center;
+            font-family: 'DM Mono', monospace;
+            font-size: 0.76rem;
+            color: var(--muted);
+        }
+        td.qty {
+            text-align: right;
+            font-family: 'DM Mono', monospace;
+            font-weight: 600;
+            font-size: 0.84rem;
+        }
+
+        /* ── SORT STATUS BAR ─────────────────────────────── */
+        .sort-bar {
+            display: none;
+            font-size: 0.72rem;
+            color: var(--muted);
+            padding: 8px 16px;
+            border-top: 1px solid var(--border);
+            font-family: 'DM Mono', monospace;
+            background: var(--stripe);
+        }
+        .sort-bar span.accent { color: var(--accent); font-weight: 500; }
+
+        /* ── EMPTY STATE ─────────────────────────────────── */
+        .empty-state {
+            text-align: center;
+            padding: 64px 20px;
+            color: var(--muted);
+        }
+        .empty-state .icon { font-size: 2rem; margin-bottom: 10px; }
+        .empty-state p { font-size: 0.84rem; margin-top: 4px; }
+
+        /* ── FOOTER ──────────────────────────────────────── */
+        .footer {
+            margin-top: 14px;
+            font-size: 0.72rem;
+            color: var(--muted);
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        /* ── LOADING OVERLAY ─────────────────────────────── */
+        #loading-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(244, 245, 247, 0.82);
+            backdrop-filter: blur(3px);
+            -webkit-backdrop-filter: blur(3px);
+            z-index: 9999;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        #loading-overlay.active { display: flex; }
+
+        .loader-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 32px 44px;
+            box-shadow: 0 8px 40px rgba(0,0,0,.12);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+        }
+        .spinner {
+            width: 38px; height: 38px;
+            border-radius: 50%;
+            border: 3px solid var(--border);
+            border-top-color: var(--accent);
+            animation: spin .75s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .loader-text {
+            font-size: 0.82rem;
+            font-weight: 500;
+            color: var(--muted);
+        }
+
+        /* ── TOP PROGRESS BAR ────────────────────────────── */
+        #progress-bar {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            height: 3px;
+            width: 0%;
+            background: var(--accent);
+            z-index: 10000;
+            border-radius: 0 2px 2px 0;
+            box-shadow: 0 0 8px rgba(37,99,235,.5);
+        }
+        #progress-bar.active { display: block; }
+    </style>
+</head>
+<body>
+
+<!-- ═══ PROGRESS BAR ════════════════════════════════════════ -->
+<div id="progress-bar"></div>
+
+<!-- ═══ LOADING OVERLAY ════════════════════════════════════ -->
+<div id="loading-overlay">
+    <div class="loader-card">
+        <div class="spinner"></div>
+        <div class="loader-text">Fetching production data…</div>
+    </div>
+</div>
+
+<!-- ═══ TOP BAR ═════════════════════════════════════════════ -->
+<div class="topbar">
+    <div class="topbar-left">
+        <h1>Meter Production &mdash; Hourly</h1>
+        <div class="subtitle">{{ today }} &nbsp;&middot;&nbsp; {{ plant }}</div>
+    </div>
+
+    <form method="get" class="controls" id="main-form">
+
+        <!-- Date -->
+        <div class="ctrl-group">
+            <label>Date</label>
+            <div class="ctrl-divider"></div>
+            <input type="date" name="date" value="{{ selected_date }}"
+                   onchange="this.form.submit()">
+        </div>
+
+        <!-- Time From -->
+        <div class="ctrl-group">
+            <label>From</label>
+            <div class="ctrl-divider"></div>
+            <input type="time" name="time_from" value="{{ time_from }}"
+                   onchange="this.form.submit()">
+        </div>
+
+        <!-- Time To -->
+        <div class="ctrl-group">
+            <label>To</label>
+            <div class="ctrl-divider"></div>
+            <input type="time" name="time_to" value="{{ time_to }}"
+                   onchange="this.form.submit()">
+        </div>
+
+        <!-- Plant -->
+        <div class="ctrl-group">
+            <label>Plant</label>
+            <div class="ctrl-divider"></div>
+            <select name="plant" onchange="this.form.submit()">
+
+                <!-- ═══════════════════════════════════════════════════
+                     ALL PLANTS OPTION
+                     Comment out the line below to hide "All Plants".
+                ═══════════════════════════════════════════════════ -->
+                <option value="ALL" {% if plant == "ALL" %}selected{% endif %}>All Plants</option>
+                <!-- ── END ALL PLANTS ─────────────────────────────── -->
+
+                {% for p in plant_names %}
+                <option value="{{ p }}" {% if p == plant %}selected{% endif %}>{{ p }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+    </form>
+
+    <!-- Logout -->
+    <a href="/logout" class="btn-logout">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+            <polyline points="16 17 21 12 16 7"/>
+            <line x1="21" y1="12" x2="9" y2="12"/>
+        </svg>
+        Logout
+    </a>
+</div>
+
+<!-- ═══ STATS PILLS ════════════════════════════════════════ -->
+<div class="stats-row">
+    <div class="stat-pill">Rows <strong>{{ rows|length }}</strong></div>
+    <div class="stat-pill">Total Qty <strong>{{ rows | sum(attribute='ProdQty') }}</strong></div>
+    <div class="stat-pill" id="sort-pill" style="display:none">
+        Sorted &nbsp;<strong id="sort-label">—</strong>
+    </div>
+</div>
+
+<!-- ═══ TABLE ══════════════════════════════════════════════ -->
+<div class="table-card">
+    <div class="table-scroll">
+        <table id="prod-table">
+            <thead>
+            <tr>
+                <th data-col="0" data-type="str" class="col-proj">
+                    <span class="th-inner">ProjCode <span class="sort-arrow"><span class="arr-up"></span><span class="arr-down"></span></span></span>
+                </th>
+                <th data-col="1" data-type="str" class="col-line">
+                    <span class="th-inner">Line <span class="sort-arrow"><span class="arr-up"></span><span class="arr-down"></span></span></span>
+                </th>
+
+                {% if plant == "ALL" %}
+                <th data-col="2" data-type="str" class="col-plant">
+                    <span class="th-inner">Plant <span class="sort-arrow"><span class="arr-up"></span><span class="arr-down"></span></span></span>
+                </th>
+                {% endif %}
+
+                <th data-col="{{ '3' if plant == 'ALL' else '2' }}" data-type="time" class="col-slot">
+                    <span class="th-inner">Hour Slot <span class="sort-arrow"><span class="arr-up"></span><span class="arr-down"></span></span></span>
+                </th>
+                <th data-col="{{ '4' if plant == 'ALL' else '3' }}" data-type="num" class="col-qty">
+                    <span class="th-inner right">ProdQty <span class="sort-arrow"><span class="arr-up"></span><span class="arr-down"></span></span></span>
+                </th>
+            </tr>
+            </thead>
+
+            <tbody id="table-body">
+            {% for r in rows %}
+            <tr>
+                <td class="proj">{{ r.ProjCode }}</td>
+                <td class="line">{{ r.Line }}</td>
+                {% if plant == "ALL" %}
+                <td class="plant-td">{{ r.Plant }}</td>
+                {% endif %}
+                <td class="slot">{{ r.Slot }}</td>
+                <td class="qty">{{ r.ProdQty }}</td>
+            </tr>
+            {% endfor %}
+
+            {% if rows|length == 0 %}
+            <tr>
+                <td colspan="{{ '5' if plant == 'ALL' else '4' }}">
+                    <div class="empty-state">
+                        <div class="icon">📭</div>
+                        <p>No production data for the selected filters.</p>
+                    </div>
+                </td>
+            </tr>
+            {% endif %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="sort-bar" id="sort-bar">
+        Sorted by <span class="accent" id="sort-col-lbl">—</span>
+        &nbsp;&middot;&nbsp;
+        <span class="accent" id="sort-dir-lbl">—</span>
+    </div>
+</div>
+
+<div class="footer">
+    <span>Click any column header to sort &middot; click again to reverse order</span>
+    <span>Meter Production Dashboard</span>
+</div>
+
+<!-- ═══ SCRIPTS ═════════════════════════════════════════════ -->
+<script>
+/* ── LOADING ──────────────────────────────────────────────── */
+(function () {
+    const overlay   = document.getElementById('loading-overlay');
+    const bar       = document.getElementById('progress-bar');
+    const form      = document.getElementById('main-form');
+
+    let barWidth = 0, barTimer = null;
+
+    function startProgress() {
+        bar.style.transition = '';
+        bar.style.width = '0%';
+        bar.classList.add('active');
+        barWidth = 0;
+        clearInterval(barTimer);
+        barTimer = setInterval(() => {
+            if      (barWidth < 30) barWidth += 4;
+            else if (barWidth < 60) barWidth += 2;
+            else if (barWidth < 85) barWidth += 0.5;
+            bar.style.width = barWidth + '%';
+            if (barWidth >= 85) clearInterval(barTimer);
+        }, 80);
+    }
+
+    function showLoading() {
+        overlay.classList.add('active');
+        startProgress();
+    }
+
+    form.addEventListener('submit', showLoading);
+    form.querySelectorAll('select, input[type="date"], input[type="time"]')
+        .forEach(el => el.addEventListener('change', showLoading));
+
+    window.addEventListener('pageshow', () => {
+        clearInterval(barTimer);
+        bar.style.transition = 'width .2s ease';
+        bar.style.width = '100%';
+        setTimeout(() => {
+            bar.style.transition = 'opacity .4s ease';
+            bar.style.opacity = '0';
+            setTimeout(() => {
+                bar.classList.remove('active');
+                bar.style.opacity = '';
+                bar.style.transition = '';
+            }, 400);
+        }, 300);
+        overlay.classList.remove('active');
+    });
+})();
+
+/* ── SORT ─────────────────────────────────────────────────── */
+(function () {
+    const table      = document.getElementById('prod-table');
+    const tbody      = document.getElementById('table-body');
+    const headers    = Array.from(table.querySelectorAll('thead th'));
+    const sortBar    = document.getElementById('sort-bar');
+    const sortPill   = document.getElementById('sort-pill');
+    const sortLabel  = document.getElementById('sort-label');
+    const sortColLbl = document.getElementById('sort-col-lbl');
+    const sortDirLbl = document.getElementById('sort-dir-lbl');
+
+    let sortCol = -1, sortDir = 1;
+
+    const colNames = headers.map(th =>
+        th.querySelector('.th-inner').childNodes[0].textContent.trim()
+    );
+
+    function parseCell(th, td) {
+        const type = th.dataset.type;
+        const txt  = td.textContent.trim();
+        if (type === 'num') return parseFloat(txt.replace(/,/g, '')) || 0;
+        return txt.toLowerCase();
+    }
+
+    function sortTable(colIdx) {
+        if (sortCol === colIdx) sortDir *= -1;
+        else { sortCol = colIdx; sortDir = 1; }
+
+        const th   = headers[colIdx];
+        const rows = Array.from(tbody.querySelectorAll('tr'));
+
+        if (rows.length === 1 && rows[0].cells.length <= 1) return;
+
+        rows.sort((a, b) => {
+            const av = parseCell(th, a.cells[colIdx]);
+            const bv = parseCell(th, b.cells[colIdx]);
+            if (av < bv) return -1 * sortDir;
+            if (av > bv) return  1 * sortDir;
+            return 0;
+        });
+        rows.forEach(r => tbody.appendChild(r));
+
+        headers.forEach(h => h.classList.remove('sort-asc', 'sort-desc'));
+        th.classList.add(sortDir === 1 ? 'sort-asc' : 'sort-desc');
+
+        const dir = sortDir === 1 ? 'Ascending ↑' : 'Descending ↓';
+        const col = colNames[colIdx];
+        sortColLbl.textContent = col;
+        sortDirLbl.textContent = dir;
+        sortBar.style.display  = '';
+        sortLabel.textContent  = `${col} ${sortDir === 1 ? '↑' : '↓'}`;
+        sortPill.style.display = '';
+    }
+
+    headers.forEach((th, i) => th.addEventListener('click', () => sortTable(i)));
+})();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Login – Meter Production</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg:       #f4f5f7;
+            --surface:  #ffffff;
+            --border:   #e4e6ea;
+            --text:     #1c1e23;
+            --muted:    #74778a;
+            --accent:   #2563eb;
+            --danger:   #dc2626;
+            --shadow:   0 1px 3px rgba(0,0,0,.07), 0 8px 32px rgba(0,0,0,.08);
+            --radius:   12px;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .login-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 44px 40px 36px;
+            width: 100%;
+            max-width: 380px;
+        }
+
+        .brand {
+            margin-bottom: 28px;
+        }
+        .brand h1 {
+            font-size: 1.15rem;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            color: var(--text);
+        }
+        .brand p {
+            font-size: 0.76rem;
+            color: var(--muted);
+            margin-top: 3px;
+            font-family: 'DM Mono', monospace;
+        }
+
+        .field {
+            margin-bottom: 16px;
+        }
+        .field label {
+            display: block;
+            font-size: 0.72rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: .06em;
+            color: var(--muted);
+            margin-bottom: 6px;
+        }
+        .field input {
+            width: 100%;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 9px 13px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.88rem;
+            color: var(--text);
+            background: var(--bg);
+            outline: none;
+            transition: border-color .15s, box-shadow .15s;
+        }
+        .field input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(37,99,235,.12);
+            background: var(--surface);
+        }
+
+        .error-msg {
+            display: none;
+            font-size: 0.76rem;
+            color: var(--danger);
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            border-radius: 7px;
+            padding: 8px 12px;
+            margin-bottom: 16px;
+        }
+        .error-msg.show { display: block; }
+
+        .btn-login {
+            width: 100%;
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 10px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.88rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background .15s, transform .1s;
+            margin-top: 4px;
+        }
+        .btn-login:hover  { background: #1d4ed8; }
+        .btn-login:active { transform: scale(.98); }
+
+        .footer-note {
+            text-align: center;
+            font-size: 0.7rem;
+            color: var(--muted);
+            margin-top: 24px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="login-card">
+    <div class="brand">
+        <h1>Meter Production</h1>
+        <!-- <p>Hourly Dashboard &nbsp;·&nbsp; Sign in to continue</p> -->
+        <p>Hour by Hour Dashboard</p>
+    </div>
+
+    {% if error %}
+    <div class="error-msg show">{{ error }}</div>
+    {% endif %}
+
+    <form method="post" action="/login">
+        <div class="field">
+            <label>Username</label>
+            <input type="text" name="username" autocomplete="username"
+                   placeholder="Enter username" required autofocus
+                   value="{{ username or '' }}">
+        </div>
+        <div class="field">
+            <label>Password</label>
+            <input type="password" name="password" autocomplete="current-password"
+                   placeholder="Enter password" required>
+        </div>
+        <button type="submit" class="btn-login">Sign In</button>
+    </form>
+
+    <!-- <div class="footer-note">Meter Production Dashboard</div> -->
+</div>
+
+</body>
+</html>
