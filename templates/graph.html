@@ -1,0 +1,428 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Production Graphs</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:#eef1f6; --surface:#fff; --border:#dde1ea; --border2:#c8cedb;
+      --text:#0f172a; --muted:#64748b; --blue:#2563eb; --blue-lt:#eff6ff; --blue-mid:#bfdbfe;
+      --amber:#b45309; --amber-lt:#fffbeb; --amber-mid:#fde68a; --radius:10px; --radius-lg:14px;
+      --shadow-sm:0 1px 3px rgba(0,0,0,.05),0 1px 2px rgba(0,0,0,.03);
+      --shadow:0 4px 14px rgba(0,0,0,.07),0 1px 3px rgba(0,0,0,.04);
+    }
+    body { font-family:"Plus Jakarta Sans",sans-serif; background:var(--bg); color:var(--text); }
+    .navbar {
+      background:var(--surface); border-bottom:1px solid var(--border); height:58px; padding:0 28px;
+      display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:50; box-shadow:var(--shadow-sm);
+    }
+    .nb-left { display:flex; align-items:center; gap:14px; }
+    .nb-logo { width:34px; height:34px; border-radius:9px; background:var(--blue); display:flex; align-items:center; justify-content:center; }
+    .nb-logo svg { stroke:#fff; }
+    .nb-title { font-size:.93rem; font-weight:700; letter-spacing:-.02em; }
+    .nb-sub { font-size:.67rem; color:var(--muted); font-family:"IBM Plex Mono",monospace; margin-top:1px; }
+    .nb-right { display:flex; align-items:center; gap:10px; }
+    .nb-nav { display:flex; align-items:center; gap:8px; }
+    .nb-link {
+      text-decoration:none; color:var(--muted); font-size:.78rem; font-weight:600;
+      padding:6px 11px; border-radius:8px; border:1px solid transparent; transition:all .14s;
+    }
+    .nb-link:hover { color:#334155; background:#f5f7fa; border-color:var(--border); }
+    .nb-link.active { color:#1d4ed8; background:var(--blue-lt); border-color:var(--blue-mid); }
+    .nb-date { font-family:"IBM Plex Mono",monospace; font-size:.72rem; color:var(--muted); background:#f5f7fa; border:1px solid var(--border); border-radius:6px; padding:4px 10px; }
+    .btn-logout {
+      display:flex; align-items:center; gap:6px; font-size:.77rem; font-weight:600; color:var(--muted);
+      background:var(--surface); border:1px solid var(--border2); border-radius:6px; padding:0 13px; height:32px; text-decoration:none;
+    }
+    .page { max-width:1440px; margin:0 auto; padding:24px 28px 50px; }
+    .head { display:flex; align-items:center; gap:10px; margin-bottom:14px; }
+    .head h2 { font-size:.92rem; font-weight:700; color:#334155; }
+    .head .sub { font-size:.68rem; color:var(--muted); font-family:"IBM Plex Mono",monospace; }
+    .line { flex:1; height:1px; background:var(--border); }
+    .filter-row {
+      background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg);
+      box-shadow:var(--shadow-sm); padding:14px 16px; display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:14px;
+    }
+    .fg { display:flex; align-items:center; border:1px solid var(--border2); border-radius:var(--radius); overflow:hidden; height:36px; background:var(--surface); }
+    .fg-lbl {
+      padding:0 11px; font-size:.62rem; font-weight:700; font-family:"IBM Plex Mono",monospace; text-transform:uppercase; letter-spacing:.1em;
+      color:var(--muted); border-right:1px solid var(--border2); height:100%; display:flex; align-items:center; background:#edf0f5;
+    }
+    .fg select { border:none; outline:none; background:transparent; color:var(--text); font-family:"IBM Plex Mono",monospace; font-size:.78rem; padding:0 10px; min-width:130px; }
+    .panel-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    .panel.wide { grid-column: 1 / -1; }
+    .panel { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); box-shadow:var(--shadow); padding:14px; }
+    .panel h3 { font-size:.78rem; font-weight:700; color:#334155; margin-bottom:10px; }
+    .chart-wrap { height: 360px; }
+    .panel canvas { width:100%; height:100% !important; }
+    #progress-bar {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 3px;
+      width: 0;
+      background: var(--blue);
+      z-index: 10000;
+      border-radius: 0 2px 2px 0;
+      box-shadow: 0 0 8px rgba(37, 99, 235, .5);
+    }
+    #loading-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(238, 241, 246, 0.82);
+      backdrop-filter: blur(2px);
+      z-index: 9999;
+      align-items: center;
+      justify-content: center;
+    }
+    #loading-overlay.active { display: flex; }
+    .loader-card {
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      border-radius: 12px;
+      padding: 22px 30px;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+    .spinner {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 2px solid var(--border2);
+      border-top-color: var(--blue);
+      animation: spin .6s linear infinite;
+    }
+    .loader-text {
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 0.72rem;
+      color: var(--muted);
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @media (max-width: 980px) {
+      .panel-grid { grid-template-columns:1fr; }
+      .navbar { padding:0 12px; }
+      .nb-sub { display:none; }
+      .nb-date { display:none; }
+    }
+  </style>
+</head>
+<body>
+<div id="progress-bar"></div>
+<div id="loading-overlay" class="active">
+  <div class="loader-card">
+    <div class="spinner"></div>
+    <div class="loader-text">Fetching production data...</div>
+  </div>
+</div>
+<nav class="navbar">
+  <div class="nb-left">
+    <div class="nb-logo">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>
+      </svg>
+    </div>
+    <div>
+      <div class="nb-title">Production Dashboard</div>
+      <div class="nb-sub">Charts and visual trends</div>
+    </div>
+  </div>
+  <div class="nb-right">
+    <div class="nb-nav">
+      <a href="{{ url_for('dashboard') }}" class="nb-link {% if page == 'dashboard' %}active{% endif %}">Dashboard</a>
+      <a href="{{ url_for('filter_page') }}" class="nb-link {% if page == 'filter' %}active{% endif %}">Filter</a>
+      <a href="{{ url_for('graph_page') }}" class="nb-link {% if page == 'graph' %}active{% endif %}">Graph</a>
+    </div>
+    <div class="nb-date">{{ today }}</div>
+    <a href="{{ url_for('logout') }}" class="btn-logout">Logout</a>
+  </div>
+</nav>
+
+<div class="page">
+  <div class="head">
+    <h2>Production Graphs</h2>
+    <span class="sub">Auto-updating every <span id="refresh-sec">10</span>s · <span id="asof">—</span></span>
+    <div class="line"></div>
+  </div>
+
+  <form id="graph-form" method="get" class="filter-row" onsubmit="showLoading()">
+    <div class="fg">
+      <span class="fg-lbl">Plant</span>
+      <select id="plant" name="plant" onchange="this.form.submit()">
+        {# <option value="ALL" {% if plant == "ALL" %}selected{% endif %}>All Plants</option> #}
+        {% for p in plant_names %}
+        <option value="{{ p }}" {% if p == plant or (not plant and p == "GPIL-2") %}selected{% endif %}>{{ p }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    {#
+    {% set slot_start = (timefrom.split(':')[0] | int) if timefrom else 0 %}
+    <div class="fg">
+      <span class="fg-lbl">Slot</span>
+      <select id="slot" onchange="onSlotChange()">
+        {% for h in range(8, 24) %}
+        {% set endh = (h + 1) % 24 %}
+        {% set h12 = 12 if (h % 12) == 0 else (h % 12) %}
+        {% set endh12 = 12 if (endh % 12) == 0 else (endh % 12) %}
+        <option value="{{ h }}" {% if slot_start == h %}selected{% endif %}>{{ '%02d:00 %s' % (h12, 'am' if h < 12 else 'pm') }} - {{ '%02d:00 %s' % (endh12, 'am' if endh < 12 else 'pm') }}</option>
+        {% endfor %}
+        {% for h in range(0, 8) %}
+        {% set endh = (h + 1) % 24 %}
+        {% set h12 = 12 if (h % 12) == 0 else (h % 12) %}
+        {% set endh12 = 12 if (endh % 12) == 0 else (endh % 12) %}
+        <option value="{{ h }}" {% if slot_start == h %}selected{% endif %}>{{ '%02d:00 %s' % (h12, 'am' if h < 12 else 'pm') }} - {{ '%02d:00 %s' % (endh12, 'am' if endh < 12 else 'pm') }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    #}
+    <input type="hidden" id="timefrom" name="timefrom" value="{{ timefrom }}">
+    <input type="hidden" id="timeto" name="timeto" value="{{ timeto }}">
+    <div class="fg">
+      <span class="fg-lbl">Project</span>
+      <select id="project" name="project" onchange="this.form.submit()">
+        <option value="ALL" {% if project == "ALL" %}selected{% endif %}>All Projects</option>
+        {% if project and project != "ALL" %}<option value="{{ project }}" selected>{{ project }}</option>{% endif %}
+      </select>
+    </div>
+    <div class="fg">
+      <span class="fg-lbl">Line</span>
+      <select id="line" name="line" onchange="this.form.submit()">
+        <option value="ALL" {% if line == "ALL" %}selected{% endif %}>All Lines</option>
+        {% if line and line != "ALL" %}<option value="{{ line }}" selected>{{ line }}</option>{% endif %}
+      </select>
+    </div>
+  </form>
+
+  <div class="panel-grid">
+    <div class="panel">
+      <h3>Plant-wise Live Production (8 AM+)</h3>
+      <div class="chart-wrap"><canvas id="plantChart"></canvas></div>
+    </div>
+    <div class="panel">
+      <h3>Line-wise Production (Current Hour)</h3>
+      <div class="chart-wrap"><canvas id="lineChart"></canvas></div>
+    </div>
+    <div class="panel wide">
+      <h3>Line-wise Production (Today)</h3>
+      <div class="chart-wrap"><canvas id="lineTodayChart"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const qs = new URLSearchParams(window.location.search);
+const fmt = n => (typeof n === "number" ? n : 0).toLocaleString("en-IN");
+const AUTO_REFRESH_MS = 10000;
+let plantChart;
+let lineChart;
+let lineTodayChart;
+let firstLoad = true;
+
+const overlay = document.getElementById("loading-overlay");
+const bar = document.getElementById("progress-bar");
+let bw = 0;
+let bt = null;
+
+function startBar() {
+  bar.style.transition = "";
+  bar.style.width = "0";
+  bar.style.display = "block";
+  bw = 0;
+  clearInterval(bt);
+  bt = setInterval(() => {
+    bw += bw < 30 ? 5 : bw < 65 ? 2 : 0.3;
+    bar.style.width = bw + "%";
+    if (bw >= 85) clearInterval(bt);
+  }, 80);
+}
+
+function showLoading() {
+  overlay.classList.add("active");
+  startBar();
+}
+
+function hideLoading() {
+  clearInterval(bt);
+  bar.style.transition = "width .15s";
+  bar.style.width = "100%";
+  setTimeout(() => {
+    bar.style.transition = "opacity .3s";
+    bar.style.opacity = "0";
+    setTimeout(() => {
+      bar.style.display = "none";
+      bar.style.opacity = "";
+      overlay.classList.remove("active");
+    }, 300);
+  }, 200);
+}
+
+function onSlotChange() {
+  showLoading();
+  const h = parseInt(document.getElementById("slot").value, 10);
+  document.getElementById("timefrom").value = String(h).padStart(2, "0") + ":00";
+  document.getElementById("timeto").value = String((h + 1) % 24).padStart(2, "0") + ":00";
+  document.getElementById("graph-form").submit();
+}
+
+function buildOrUpdateChart(chartRef, canvasId, labels, values, color, horizontal=false) {
+  const cfg = {
+    type: "bar",
+    data: { labels, datasets: [{ data: values, borderRadius: 6, backgroundColor: color }] },
+    options: {
+      indexAxis: horizontal ? "y" : "x",
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        datalabels: {
+          color: (ctx) => {
+            const vals = (ctx.chart.data.datasets[0].data || []).map(v => Number(v) || 0);
+            const max = vals.length ? Math.max(...vals) : 0;
+            const v = Number(ctx.raw) || 0;
+            return v >= max * 0.14 ? "#ffffff" : "#334155";
+          },
+          anchor: "end",
+          align: (ctx) => {
+            const vals = (ctx.chart.data.datasets[0].data || []).map(v => Number(v) || 0);
+            const max = vals.length ? Math.max(...vals) : 0;
+            const v = Number(ctx.raw) || 0;
+            return v >= max * 0.14 ? "left" : "right";
+          },
+          offset: (ctx) => {
+            const vals = (ctx.chart.data.datasets[0].data || []).map(v => Number(v) || 0);
+            const max = vals.length ? Math.max(...vals) : 0;
+            const v = Number(ctx.raw) || 0;
+            return v >= max * 0.14 ? 6 : 4;
+          },
+          clamp: true,
+          clip: false,
+          formatter: (v) => fmt(v),
+          font: { family: "IBM Plex Mono", size: 10, weight: "600" }
+        }
+      },
+      layout: { padding: { right: 26 } },
+      scales: {
+        x: {
+          ticks: { color: "#64748b", font: { family: "IBM Plex Mono", size: 10 }, autoSkip: true, maxTicksLimit: 8 },
+          grid: { color: "#eef2f7" }
+        },
+        y: {
+          ticks: { color: "#64748b", font: { family: "IBM Plex Mono", size: 10 }, autoSkip: true, maxTicksLimit: horizontal ? 20 : 8 },
+          grid: { color: "#eef2f7" }
+        },
+      }
+    }
+  };
+  if (!chartRef) return new Chart(document.getElementById(canvasId), cfg);
+  chartRef.data.labels = labels;
+  chartRef.data.datasets[0].data = values;
+  chartRef.update();
+  return chartRef;
+}
+
+function updateDynamicFilters(rows) {
+  const selectedProject = qs.get("project") || "ALL";
+  const selectedLine = qs.get("line") || "ALL";
+  const projectSel = document.getElementById("project");
+  const lineSel = document.getElementById("line");
+  if (!projectSel || !lineSel) return;
+
+  const projects = [...new Set(rows.map(r => r.ProjCode))].sort((a,b) => a.localeCompare(b));
+  projectSel.innerHTML = ['<option value="ALL">All Projects</option>']
+    .concat(projects.map(p => `<option value="${p}">${p}</option>`))
+    .join("");
+  projectSel.value = projects.includes(selectedProject) ? selectedProject : "ALL";
+
+  const pool = projectSel.value === "ALL" ? rows : rows.filter(r => r.ProjCode === projectSel.value);
+  const lines = [...new Set(pool.map(r => r.Line))].sort((a,b) => a.localeCompare(b));
+  lineSel.innerHTML = ['<option value="ALL">All Lines</option>']
+    .concat(lines.map(l => `<option value="${l}">${l}</option>`))
+    .join("");
+  lineSel.value = lines.includes(selectedLine) ? selectedLine : "ALL";
+}
+
+async function refreshCharts() {
+  try {
+    const plant = qs.get("plant") || "{{ plant }}";
+    const from = qs.get("timefrom") || "{{ timefrom }}";
+    const to = qs.get("timeto") || "{{ timeto }}";
+    const selectedProject = qs.get("project") || "ALL";
+    const selectedLine = qs.get("line") || "ALL";
+
+    const [liveRes, breakdownRes, todayRes] = await Promise.all([
+      fetch("/api/live_total?plant=ALL", { cache: "no-store" }),
+      fetch(`/api/breakdown?plant=${encodeURIComponent(plant)}&timefrom=${encodeURIComponent(from)}&timeto=${encodeURIComponent(to)}`, { cache: "no-store" }),
+      fetch(`/api/breakdown?plant=${encodeURIComponent(plant)}&timefrom=08%3A00&timeto=23%3A59`, { cache: "no-store" }),
+    ]);
+    if (!liveRes.ok || !breakdownRes.ok || !todayRes.ok) return;
+
+    const live = await liveRes.json();
+    const breakdown = await breakdownRes.json();
+    const todayBreakdown = await todayRes.json();
+    const plantTotals = live.plant_totals || {};
+    const plantLabels = Object.keys(plantTotals);
+    const plantValues = plantLabels.map(k => plantTotals[k]);
+    plantChart = buildOrUpdateChart(plantChart, "plantChart", plantLabels, plantValues, "#3b82f6", true);
+    document.getElementById("asof").textContent = "Last updated: " + (live.as_of || "").replace("T", " ");
+
+    const rows = breakdown.rows || [];
+    updateDynamicFilters(rows);
+    const filtered = rows.filter(r =>
+      (selectedProject === "ALL" || r.ProjCode === selectedProject) &&
+      (selectedLine === "ALL" || r.Line === selectedLine)
+    );
+
+    const lineMap = {};
+    filtered.forEach(r => { lineMap[r.Line] = (lineMap[r.Line] || 0) + (r.ProdQty || 0); });
+    const topLineEntries = Object.entries(lineMap)
+      .sort((a, b) => (b[1] - a[1]) || a[0].localeCompare(b[0]))
+      .slice(0, 20)
+      .sort((a, b) => a[0].localeCompare(b[0], undefined, { numeric: true, sensitivity: "base" }));
+    const lineLabels = topLineEntries.map(([k]) => k);
+    const lineValues = topLineEntries.map(([,v]) => v);
+    lineChart = buildOrUpdateChart(lineChart, "lineChart", lineLabels, lineValues, "#f59e0b", true);
+
+    const todayRows = (todayBreakdown.rows || []).filter(r =>
+      (selectedProject === "ALL" || r.ProjCode === selectedProject) &&
+      (selectedLine === "ALL" || r.Line === selectedLine)
+    );
+    const lineTodayMap = {};
+    todayRows.forEach(r => { lineTodayMap[r.Line] = (lineTodayMap[r.Line] || 0) + (r.ProdQty || 0); });
+    const lineTodayEntries = Object.entries(lineTodayMap)
+      .sort((a, b) => (b[1] - a[1]) || a[0].localeCompare(b[0]))
+      .slice(0, 20)
+      .sort((a, b) => a[0].localeCompare(b[0], undefined, { numeric: true, sensitivity: "base" }));
+    const lineTodayLabels = lineTodayEntries.map(([k]) => k);
+    const lineTodayValues = lineTodayEntries.map(([,v]) => v);
+    lineTodayChart = buildOrUpdateChart(lineTodayChart, "lineTodayChart", lineTodayLabels, lineTodayValues, "#2563eb", true);
+    if (firstLoad) {
+      hideLoading();
+      firstLoad = false;
+    }
+  } catch (err) {
+    console.warn("graph refresh error", err);
+    if (firstLoad) {
+      hideLoading();
+      firstLoad = false;
+    }
+  }
+}
+
+Chart.register(ChartDataLabels);
+const refreshSecEl = document.getElementById("refresh-sec");
+if (refreshSecEl) refreshSecEl.textContent = String(Math.floor(AUTO_REFRESH_MS / 1000));
+refreshCharts();
+setInterval(refreshCharts, AUTO_REFRESH_MS);
+</script>
+</body>
+</html>
+

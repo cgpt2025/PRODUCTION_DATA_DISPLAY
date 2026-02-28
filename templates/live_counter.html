@@ -209,7 +209,7 @@
   <div class="meta">
     <div>
       <span class="pulse-dot"></span>
-      Updating every <strong>5s</strong>
+      Updating every <strong id="refresh-sec">10s</strong>
     </div>
     <div id="meta-time">Last updated: --</div>
   </div>
@@ -221,11 +221,14 @@
 </div>
 
 <script>
+  const AUTO_REFRESH_MS = 10000;
   const counterEl = document.getElementById("counter");
   const metaTimeEl = document.getElementById("meta-time");
+  const refreshSecEl = document.getElementById("refresh-sec");
   const plantSelect = document.getElementById("plant-select");
   const plantForm = document.getElementById("plant-form");
   const plantLabel = document.getElementById("plant-label");
+  if (refreshSecEl) refreshSecEl.textContent = `${Math.floor(AUTO_REFRESH_MS / 1000)}s`;
 
   let currentValue = 0;
   let currentPlant = plantSelect.value;
@@ -308,7 +311,7 @@
   // Initial state
   renderDigits(0);
   fetchTotal();
-  setInterval(fetchTotal, 5000);
+  setInterval(fetchTotal, AUTO_REFRESH_MS);
 </script>
 
 </body>
