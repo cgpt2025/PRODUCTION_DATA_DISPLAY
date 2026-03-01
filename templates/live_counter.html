@@ -8,16 +8,48 @@
   <link
     href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap"
     rel="stylesheet">
+  <script>
+    (function () {
+      const key = "pd_theme";
+      const saved = localStorage.getItem(key);
+      if (saved === "dark" || saved === "light") {
+        document.documentElement.setAttribute("data-theme", saved);
+      }
+    })();
+  </script>
 
   <style>
     :root {
+      --bg: #eef2f7;
+      --accent: #16a34a;
+      --accent-soft: rgba(34, 197, 94, 0.12);
+      --accent-muted: #15803d;
+      --text: #0f172a;
+      --muted: #64748b;
+      --bg-grad: radial-gradient(circle at top, #f8fbff 0, #eef2f7 45%, #e7edf6 100%);
+      --top-bg: rgba(255, 255, 255, 0.92);
+      --top-border: rgba(148, 163, 184, 0.45);
+      --badge-bg: rgba(226, 232, 240, 0.9);
+      --badge-border: rgba(148, 163, 184, 0.45);
+      --num-bg: radial-gradient(circle at top, rgba(34, 197, 94, 0.15), transparent 60%);
+      --num-border: rgba(22, 163, 74, 0.42);
+      --num-glow: 0 0 36px rgba(34, 197, 94, 0.18), 0 0 80px rgba(22, 163, 74, 0.16) inset;
+    }
+    :root[data-theme="dark"] {
       --bg: #020617;
-      --card: #020617;
       --accent: #22c55e;
       --accent-soft: rgba(34, 197, 94, 0.12);
       --accent-muted: #4ade80;
       --text: #f9fafb;
       --muted: #9ca3af;
+      --bg-grad: radial-gradient(circle at top, #0f172a 0, #020617 45%, #000 100%);
+      --top-bg: rgba(15, 23, 42, 0.9);
+      --top-border: rgba(148, 163, 184, 0.3);
+      --badge-bg: rgba(15, 23, 42, 0.8);
+      --badge-border: rgba(148, 163, 184, 0.4);
+      --num-bg: radial-gradient(circle at top, rgba(34, 197, 94, 0.18), transparent 60%);
+      --num-border: rgba(34, 197, 94, 0.5);
+      --num-glow: 0 0 40px rgba(34, 197, 94, 0.22), 0 0 120px rgba(22, 163, 74, 0.3) inset;
     }
 
     * {
@@ -28,7 +60,7 @@
 
     body {
       font-family: "DM Sans", sans-serif;
-      background: radial-gradient(circle at top, #0f172a 0, #020617 45%, #000 100%);
+      background: var(--bg-grad);
       color: var(--text);
       min-height: 100vh;
       display: flex;
@@ -47,9 +79,9 @@
       align-items: center;
       gap: 16px;
       padding: 8px 16px;
-      background: rgba(15, 23, 42, 0.9);
+      background: var(--top-bg);
       border-radius: 999px;
-      border: 1px solid rgba(148, 163, 184, 0.3);
+      border: 1px solid var(--top-border);
       backdrop-filter: blur(10px);
       font-size: 0.78rem;
       color: var(--muted);
@@ -75,8 +107,8 @@
     .badge {
       padding: 2px 8px;
       border-radius: 999px;
-      background: rgba(15, 23, 42, 0.8);
-      border: 1px solid rgba(148, 163, 184, 0.4);
+      background: var(--badge-bg);
+      border: 1px solid var(--badge-border);
       font-family: "DM Mono", monospace;
       font-size: 0.68rem;
       text-transform: uppercase;
@@ -111,11 +143,9 @@
       display: inline-flex;
       padding: 16px 32px;
       border-radius: 18px;
-      background: radial-gradient(circle at top, rgba(34, 197, 94, 0.18), transparent 60%);
-      border: 1px solid rgba(34, 197, 94, 0.5);
-      box-shadow:
-        0 0 40px rgba(34, 197, 94, 0.22),
-        0 0 120px rgba(22, 163, 74, 0.3) inset;
+      background: var(--num-bg);
+      border: 1px solid var(--num-border);
+      box-shadow: var(--num-glow);
       position: relative;
       overflow: hidden;
     }
@@ -209,7 +239,7 @@
   <div class="meta">
     <div>
       <span class="pulse-dot"></span>
-      Updating every <strong id="refresh-sec">10s</strong>
+      Updating every <strong id="refresh-sec">30s</strong>
     </div>
     <div id="meta-time">Last updated: --</div>
   </div>
@@ -221,7 +251,7 @@
 </div>
 
 <script>
-  const AUTO_REFRESH_MS = 10000;
+  const AUTO_REFRESH_MS = 30000;
   const counterEl = document.getElementById("counter");
   const metaTimeEl = document.getElementById("meta-time");
   const refreshSecEl = document.getElementById("refresh-sec");

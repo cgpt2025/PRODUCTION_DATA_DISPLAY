@@ -5,6 +5,15 @@
   <title>Production Dashboard</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script>
+    (function () {
+      const key = "pd_theme";
+      const saved = localStorage.getItem(key);
+      if (saved === "dark" || saved === "light") {
+        document.documentElement.setAttribute("data-theme", saved);
+      }
+    })();
+  </script>
 
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -48,6 +57,31 @@
       --shadow-sm:   0 1px 3px rgba(0,0,0,.05), 0 1px 2px rgba(0,0,0,.03);
       --shadow:      0 4px 14px rgba(0,0,0,.07), 0 1px 3px rgba(0,0,0,.04);
       --shadow-lg:   0 10px 32px rgba(0,0,0,.09), 0 2px 8px rgba(0,0,0,.04);
+    }
+    :root[data-theme="dark"] {
+      --bg:          #0b1220;
+      --surface:     #0f172a;
+      --surface2:    #111d34;
+      --surface3:    #17243c;
+      --border:      #24344f;
+      --border2:     #33496b;
+      --text:        #e2e8f0;
+      --text2:       #cbd5e1;
+      --muted:       #93a4bd;
+      --muted2:      #7f93af;
+      --blue-lt:     #13284f;
+      --blue-mid:    #2b4f85;
+      --blue-xlt:    #172a46;
+      --green-lt:    #0f2a1b;
+      --green-mid:   #245d40;
+      --green-xlt:   #11261b;
+      --amber-lt:    #2a1f0f;
+      --amber-mid:   #7a6028;
+      --amber-text:  #f0c879;
+      --red-lt:      #2f1618;
+      --shadow-sm:   0 1px 2px rgba(0,0,0,.35), 0 1px 4px rgba(0,0,0,.25);
+      --shadow:      0 6px 18px rgba(0,0,0,.35), 0 1px 4px rgba(0,0,0,.25);
+      --shadow-lg:   0 10px 28px rgba(0,0,0,.4), 0 2px 8px rgba(0,0,0,.3);
     }
 
     body {
@@ -129,6 +163,56 @@
       text-decoration: none; transition: all .14s;
     }
     .btn-logout:hover { color: var(--red); border-color: #fca5a5; background: var(--red-lt); }
+    .profile-menu { position: relative; }
+    .profile-btn {
+      width: 34px; height: 34px; border-radius: 999px;
+      border: 1px solid var(--border2);
+      background: var(--surface);
+      color: var(--muted);
+      display: inline-flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      transition: all .14s;
+    }
+    .profile-btn:hover { color: var(--text2); border-color: var(--blue-mid); background: var(--surface2); }
+    .profile-pop {
+      position: absolute;
+      right: 0;
+      top: calc(100% + 8px);
+      min-width: 220px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      box-shadow: var(--shadow);
+      padding: 6px;
+      display: none;
+      z-index: 350;
+    }
+    .profile-pop.open { display: block; }
+    .pm-item {
+      width: 100%;
+      text-decoration: none;
+      border: none;
+      background: transparent;
+      color: var(--text2);
+      font-family: "Plus Jakarta Sans", sans-serif;
+      font-size: .78rem;
+      border-radius: 8px;
+      padding: 8px 9px;
+      display: flex; align-items: center; justify-content: space-between; gap: 8px;
+      cursor: pointer;
+    }
+    .pm-item:hover { background: var(--surface2); }
+    .pm-item-left { display: inline-flex; align-items: center; gap: 8px; }
+    .pm-item.danger { color: #ef4444; }
+    .pm-item.danger:hover { background: var(--red-lt); }
+    .pm-state {
+      font-family: "IBM Plex Mono", monospace;
+      font-size: .68rem;
+      color: var(--muted);
+      border: 1px solid var(--border2);
+      border-radius: 999px;
+      padding: 2px 8px;
+    }
 
     /* ══ PAGE SHELL ════════════════════════════════════════════════════ */
     .page { max-width: 1440px; margin: 0 auto; padding: 26px 28px 60px; }
@@ -458,6 +542,21 @@
       font-size: 0.62rem; color: var(--muted);
       display: flex; justify-content: space-between; flex-wrap: wrap; gap: 4px;
     }
+    :root[data-theme="dark"] thead th {
+      background: #0b1426;
+      color: #9fb3d1;
+      border-bottom-color: #1d2d47;
+    }
+    :root[data-theme="dark"] thead th:hover { background: #11203a; color: #c8d8f0; }
+    :root[data-theme="dark"] thead th.col-identity { border-right-color: #2a3e5f; }
+    :root[data-theme="dark"] thead th.col-today { border-right-color: #2a3e5f; color: #7ea7e6; }
+    :root[data-theme="dark"] thead th.col-thishour { color: #f4c36a; }
+    :root[data-theme="dark"] tbody tr:nth-child(even) { background: #101b2f; }
+    :root[data-theme="dark"] tbody tr:hover { background: #172844 !important; }
+    :root[data-theme="dark"] .lc {
+      background: linear-gradient(180deg, #0f172a 0%, #13203a 100%);
+      border-color: #24344f;
+    }
 
     /* ══ PROGRESS + OVERLAY ═══════════════════════════════════════════ */
     #progress-bar {
@@ -536,12 +635,32 @@
       <a href="{{ url_for('graph_page') }}" class="nb-link {% if page == 'graph' %}active{% endif %}">Graph</a>
     </div>
     <div class="nb-date">{{ today }}</div>
-    <a href="{{ url_for('logout') }}" class="btn-logout">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
-      </svg>
-      Logout
-    </a>
+    <div class="profile-menu">
+      <button type="button" class="profile-btn" id="profile-btn" aria-label="Profile menu" aria-expanded="false">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-7 8-7s8 3 8 7"/>
+        </svg>
+      </button>
+      <div class="profile-pop" id="profile-pop">
+        <button type="button" class="pm-item" id="theme-toggle">
+          <span class="pm-item-left">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 3v2m0 14v2M3 12h2m14 0h2M5.6 5.6l1.4 1.4m10 10 1.4 1.4M5.6 18.4 7 17m10-10 1.4-1.4"/><circle cx="12" cy="12" r="4"/>
+            </svg>
+            <span>Dark Mode</span>
+          </span>
+          <span class="pm-state" id="theme-state">Off</span>
+        </button>
+        <a href="{{ url_for('logout') }}" class="pm-item danger">
+          <span class="pm-item-left">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+            </svg>
+            <span>Logout</span>
+          </span>
+        </a>
+      </div>
+    </div>
   </div>
 </nav>
 
@@ -668,22 +787,6 @@
 
     <!-- Table -->
     <div class="tbl-wrap">
-      <!-- Column group header -->
-      <div class="tbl-colgroup-header">
-        <div class="tcgh identity">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-7 8-7s8 3 8 7"/></svg>
-          Line Identity
-        </div>
-        <div class="tcgh today">
-          <span class="tcgh-dot"></span>
-          Today's Total (08:00 – Now)
-        </div>
-        <div class="tcgh thishour">
-          <span class="tcgh-dot"></span>
-          Selected Slot (<span id="slot-header-lbl">{{ timefrom }} → {{ timeto }}</span>)
-        </div>
-      </div>
-
       <div class="tbl-scroll">
         <table id="prod-table">
           <thead>
@@ -698,10 +801,10 @@
               <span class="th-inner">Plant <span class="sort-arr"><span class="arr-u"></span><span class="arr-d"></span></span></span>
             </th>
             <th data-col="3" data-type="num" class="col-today">
-              <span class="th-inner right">Qty (Today) <span class="sort-arr"><span class="arr-u"></span><span class="arr-d"></span></span></span>
+              <span class="th-inner right">TODAY 8 AM+ <span class="sort-arr"><span class="arr-u"></span><span class="arr-d"></span></span></span>
             </th>
             <th data-col="4" data-type="num" class="col-thishour">
-              <span class="th-inner right">Qty (Slot) <span class="sort-arr"><span class="arr-u"></span><span class="arr-d"></span></span></span>
+              <span class="th-inner right"><span id="th-slot-lbl">{{ timefrom }} - {{ timeto }}</span> <span class="sort-arr"><span class="arr-u"></span><span class="arr-d"></span></span></span>
             </th>
           </tr>
           </thead>
@@ -724,7 +827,7 @@
 <script>
 // ── Helpers ─────────────────────────────────────────────────────────
 const $  = id => document.getElementById(id);
-const AUTO_REFRESH_MS = 10000;
+const AUTO_REFRESH_MS = 30000;
 const fmt = n => (typeof n === "number" ? n : 0).toLocaleString("en-IN");
 
 function bump(el) {
@@ -766,6 +869,19 @@ function toSlotLabel(from, to) {
   const toHour = parseInt(to, 10);
   if (Number.isNaN(fromHour) || Number.isNaN(toHour)) return `${from} - ${to}`;
   return `${fmtHour(fromHour)} - ${fmtHour(toHour)}`;
+}
+
+function fmtHourCompact(h) {
+  const h12 = (h % 12) === 0 ? 12 : (h % 12);
+  const suffix = h < 12 ? "AM" : "PM";
+  return `${h12} ${suffix}`;
+}
+
+function toSlotHeaderLabel(from, to) {
+  const fromHour = parseInt(from, 10);
+  const toHour = parseInt(to, 10);
+  if (Number.isNaN(fromHour) || Number.isNaN(toHour)) return `${from} - ${to}`;
+  return `${fmtHourCompact(fromHour)} - ${fmtHourCompact(toHour)}`;
 }
 
 function syncSlotToHidden() {
@@ -825,7 +941,7 @@ window.addEventListener("pageshow", () => {
 });
 
 // ── Sort ──────────────────────────────────────────────────────────────
-let sortCol=-1, sortDir=1;
+let sortCol = ("{{ page }}" === "dashboard" ? 1 : -1), sortDir = 1;
 
 function bindSort() {
   const tbl     = $("prod-table");
@@ -961,7 +1077,8 @@ async function fetchTable() {
 
     // Update slot header
     const slotLbl = toSlotLabel(from, to);
-    if ($("slot-header-lbl")) $("slot-header-lbl").textContent = slotLbl;
+    const slotHeadLbl = toSlotHeaderLabel(from, to);
+    if ($("th-slot-lbl")) $("th-slot-lbl").textContent = slotHeadLbl;
     if ($("fi-plant")) $("fi-plant").textContent = plant;
     if ($("fi-time"))  $("fi-time").textContent  = slotLbl;
 
@@ -1026,14 +1143,41 @@ fetchLive();
 fetchTable();
 setInterval(() => { fetchLive(); fetchTable(); }, AUTO_REFRESH_MS);
 </script>
+<script>
+(() => {
+  const root = document.documentElement;
+  const key = "pd_theme";
+  const btn = document.getElementById("profile-btn");
+  const pop = document.getElementById("profile-pop");
+  const toggle = document.getElementById("theme-toggle");
+  const state = document.getElementById("theme-state");
+  const getTheme = () => root.getAttribute("data-theme") === "dark" ? "dark" : "light";
+  const setTheme = (t) => {
+    root.setAttribute("data-theme", t);
+    localStorage.setItem(key, t);
+    if (state) state.textContent = t === "dark" ? "On" : "Off";
+  };
+  setTheme(getTheme());
+  if (btn && pop) {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const open = pop.classList.toggle("open");
+      btn.setAttribute("aria-expanded", open ? "true" : "false");
+    });
+    document.addEventListener("click", (e) => {
+      if (!pop.contains(e.target) && e.target !== btn) {
+        pop.classList.remove("open");
+        btn.setAttribute("aria-expanded", "false");
+      }
+    });
+  }
+  if (toggle) {
+    toggle.addEventListener("click", () => setTheme(getTheme() === "dark" ? "light" : "dark"));
+  }
+})();
+</script>
 </body>
 </html>
-
-
-
-
-
-
 
 
 

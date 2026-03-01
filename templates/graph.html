@@ -7,6 +7,15 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
+  <script>
+    (function () {
+      const key = "pd_theme";
+      const saved = localStorage.getItem(key);
+      if (saved === "dark" || saved === "light") {
+        document.documentElement.setAttribute("data-theme", saved);
+      }
+    })();
+  </script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -15,6 +24,13 @@
       --amber:#b45309; --amber-lt:#fffbeb; --amber-mid:#fde68a; --radius:10px; --radius-lg:14px;
       --shadow-sm:0 1px 3px rgba(0,0,0,.05),0 1px 2px rgba(0,0,0,.03);
       --shadow:0 4px 14px rgba(0,0,0,.07),0 1px 3px rgba(0,0,0,.04);
+    }
+    :root[data-theme="dark"] {
+      --bg:#0b1220; --surface:#0f172a; --border:#24344f; --border2:#33496b;
+      --text:#e2e8f0; --muted:#93a4bd; --blue:#3b82f6; --blue-lt:#13284f; --blue-mid:#2b4f85;
+      --amber:#f0c879; --amber-lt:#2a1f0f; --amber-mid:#7a6028;
+      --shadow-sm:0 1px 2px rgba(0,0,0,.35),0 1px 4px rgba(0,0,0,.25);
+      --shadow:0 6px 18px rgba(0,0,0,.35),0 1px 4px rgba(0,0,0,.25);
     }
     body { font-family:"Plus Jakarta Sans",sans-serif; background:var(--bg); color:var(--text); }
     .navbar {
@@ -39,6 +55,30 @@
       display:flex; align-items:center; gap:6px; font-size:.77rem; font-weight:600; color:var(--muted);
       background:var(--surface); border:1px solid var(--border2); border-radius:6px; padding:0 13px; height:32px; text-decoration:none;
     }
+    .profile-menu { position: relative; }
+    .profile-btn {
+      width:34px; height:34px; border-radius:999px; border:1px solid var(--border2); background:var(--surface);
+      color:var(--muted); display:inline-flex; align-items:center; justify-content:center; cursor:pointer; transition:all .14s;
+    }
+    .profile-btn:hover { color:var(--text); border-color:var(--blue-mid); background:var(--blue-lt); }
+    .profile-pop {
+      position:absolute; right:0; top:calc(100% + 8px); min-width:220px; background:var(--surface);
+      border:1px solid var(--border); border-radius:10px; box-shadow:var(--shadow); padding:6px; display:none; z-index:80;
+    }
+    .profile-pop.open { display:block; }
+    .pm-item {
+      width:100%; text-decoration:none; border:none; background:transparent; color:var(--text); border-radius:8px;
+      padding:8px 9px; display:flex; align-items:center; justify-content:space-between; gap:8px; cursor:pointer; font-size:.78rem;
+      font-family:"Plus Jakarta Sans",sans-serif;
+    }
+    .pm-item:hover { background:#f5f7fa; }
+    :root[data-theme="dark"] .pm-item:hover { background:#111d34; }
+    .pm-item-left { display:inline-flex; align-items:center; gap:8px; }
+    .pm-item.danger { color:#ef4444; }
+    .pm-state {
+      font-family:"IBM Plex Mono",monospace; font-size:.68rem; color:var(--muted);
+      border:1px solid var(--border2); border-radius:999px; padding:2px 8px;
+    }
     .page { max-width:1440px; margin:0 auto; padding:24px 28px 50px; }
     .head { display:flex; align-items:center; gap:10px; margin-bottom:14px; }
     .head h2 { font-size:.92rem; font-weight:700; color:#334155; }
@@ -58,8 +98,73 @@
     .panel.wide { grid-column: 1 / -1; }
     .panel { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); box-shadow:var(--shadow); padding:14px; }
     .panel h3 { font-size:.78rem; font-weight:700; color:#334155; margin-bottom:10px; }
+    :root[data-theme="dark"] .panel h3 { color: var(--text2, #cbd5e1); }
     .chart-wrap { height: 360px; }
     .panel canvas { width:100%; height:100% !important; }
+    .plant-viz-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 12px; }
+    .mini-panel {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+      padding: 10px;
+      min-height: 350px;
+    }
+    .mini-panel h4 {
+      font-size: .7rem;
+      color: #475569;
+      font-family: "IBM Plex Mono", monospace;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .chart-wrap.leader { height: 290px; }
+    .donut-stack { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: center; }
+    .chart-wrap.donut {
+      height: 250px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding-top: 8px;
+    }
+    .plant-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 250px;
+      overflow: auto;
+      padding-right: 4px;
+    }
+    .plant-list li {
+      display: grid;
+      grid-template-columns: auto 1fr auto auto;
+      gap: 8px;
+      align-items: center;
+      padding: 6px 8px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: #fff;
+      font-family: "IBM Plex Mono", monospace;
+      font-size: .68rem;
+      color: #334155;
+    }
+    :root[data-theme="dark"] .mini-panel { background: linear-gradient(180deg, #0f172a 0%, #13203a 100%); }
+    :root[data-theme="dark"] .plant-list li { background:#0f172a; color:#cbd5e1; }
+    .dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+    .rank {
+      min-width: 24px;
+      text-align: right;
+      color: #64748b;
+    }
+    .share {
+      color: #0f172a;
+      font-weight: 600;
+    }
     #progress-bar {
       display: none;
       position: fixed;
@@ -110,6 +215,8 @@
     @keyframes spin { to { transform: rotate(360deg); } }
     @media (max-width: 980px) {
       .panel-grid { grid-template-columns:1fr; }
+      .plant-viz-grid { grid-template-columns:1fr; }
+      .donut-stack { grid-template-columns:1fr; }
       .navbar { padding:0 12px; }
       .nb-sub { display:none; }
       .nb-date { display:none; }
@@ -143,14 +250,39 @@
       <a href="{{ url_for('graph_page') }}" class="nb-link {% if page == 'graph' %}active{% endif %}">Graph</a>
     </div>
     <div class="nb-date">{{ today }}</div>
-    <a href="{{ url_for('logout') }}" class="btn-logout">Logout</a>
+    <div class="profile-menu">
+      <button type="button" class="profile-btn" id="profile-btn" aria-label="Profile menu" aria-expanded="false">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-7 8-7s8 3 8 7"/>
+        </svg>
+      </button>
+      <div class="profile-pop" id="profile-pop">
+        <button type="button" class="pm-item" id="theme-toggle">
+          <span class="pm-item-left">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 3v2m0 14v2M3 12h2m14 0h2M5.6 5.6l1.4 1.4m10 10 1.4 1.4M5.6 18.4 7 17m10-10 1.4-1.4"/><circle cx="12" cy="12" r="4"/>
+            </svg>
+            <span>Dark Mode</span>
+          </span>
+          <span class="pm-state" id="theme-state">Off</span>
+        </button>
+        <a href="{{ url_for('logout') }}" class="pm-item danger">
+          <span class="pm-item-left">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+            </svg>
+            <span>Logout</span>
+          </span>
+        </a>
+      </div>
+    </div>
   </div>
 </nav>
 
 <div class="page">
   <div class="head">
     <h2>Production Graphs</h2>
-    <span class="sub">Auto-updating every <span id="refresh-sec">10</span>s · <span id="asof">—</span></span>
+    <span class="sub">Auto-updating every <span id="refresh-sec">30</span>s · <span id="asof">—</span></span>
     <div class="line"></div>
   </div>
 
@@ -204,16 +336,29 @@
 
   <div class="panel-grid">
     <div class="panel">
-      <h3>Plant-wise Live Production (8 AM+)</h3>
-      <div class="chart-wrap"><canvas id="plantChart"></canvas></div>
+      <h3>Line-wise Production (Today 8 AM+)</h3>
+      <div class="chart-wrap"><canvas id="lineTodayChart"></canvas></div>
     </div>
     <div class="panel">
-      <h3>Line-wise Production (Current Hour)</h3>
+      <h3 id="line-slot-heading">Line-wise Production (Current Hour)</h3>
       <div class="chart-wrap"><canvas id="lineChart"></canvas></div>
     </div>
     <div class="panel wide">
-      <h3>Line-wise Production (Today)</h3>
-      <div class="chart-wrap"><canvas id="lineTodayChart"></canvas></div>
+      <h3>Plant-wise Total Production (8 AM+)</h3>
+      <div class="plant-viz-grid">
+        <div class="mini-panel">
+          <h4>Ranked Horizontal Leaderboard</h4>
+          <div class="chart-wrap leader"><canvas id="plantLeaderboardChart"></canvas></div>
+        </div>
+        <div class="mini-panel">
+          <h4>Percentage Contribution</h4>
+          <h4></h4>
+          <div class="donut-stack">
+            <div class="chart-wrap donut"><canvas id="plantDonutChart"></canvas></div>
+            <ul id="plantSideList" class="plant-list"></ul>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -221,11 +366,13 @@
 <script>
 const qs = new URLSearchParams(window.location.search);
 const fmt = n => (typeof n === "number" ? n : 0).toLocaleString("en-IN");
-const AUTO_REFRESH_MS = 10000;
-let plantChart;
+const AUTO_REFRESH_MS = 30000;
+let plantLeaderboardChart;
+let plantDonutChart;
 let lineChart;
 let lineTodayChart;
 let firstLoad = true;
+const plantSideListEl = document.getElementById("plantSideList");
 
 const overlay = document.getElementById("loading-overlay");
 const bar = document.getElementById("progress-bar");
@@ -273,6 +420,17 @@ function onSlotChange() {
   document.getElementById("graph-form").submit();
 }
 
+function toSlotHeaderLabel(from, to) {
+  const to12 = (hhmm) => {
+    const h = parseInt((hhmm || "").split(":")[0], 10);
+    if (Number.isNaN(h)) return hhmm;
+    const h12 = (h % 12) === 0 ? 12 : (h % 12);
+    const ampm = h < 12 ? "AM" : "PM";
+    return `${h12} ${ampm}`;
+  };
+  return `${to12(from)} - ${to12(to)}`;
+}
+
 function buildOrUpdateChart(chartRef, canvasId, labels, values, color, horizontal=false) {
   const cfg = {
     type: "bar",
@@ -295,13 +453,15 @@ function buildOrUpdateChart(chartRef, canvasId, labels, values, color, horizonta
             const vals = (ctx.chart.data.datasets[0].data || []).map(v => Number(v) || 0);
             const max = vals.length ? Math.max(...vals) : 0;
             const v = Number(ctx.raw) || 0;
-            return v >= max * 0.14 ? "left" : "right";
+            if (horizontal) return v >= max * 0.14 ? "left" : "right";
+            return v >= max * 0.14 ? "start" : "top";
           },
           offset: (ctx) => {
             const vals = (ctx.chart.data.datasets[0].data || []).map(v => Number(v) || 0);
             const max = vals.length ? Math.max(...vals) : 0;
             const v = Number(ctx.raw) || 0;
-            return v >= max * 0.14 ? 6 : 4;
+            if (horizontal) return v >= max * 0.14 ? 6 : 4;
+            return v >= max * 0.14 ? 2 : 4;
           },
           clamp: true,
           clip: false,
@@ -312,7 +472,13 @@ function buildOrUpdateChart(chartRef, canvasId, labels, values, color, horizonta
       layout: { padding: { right: 26 } },
       scales: {
         x: {
-          ticks: { color: "#64748b", font: { family: "IBM Plex Mono", size: 10 }, autoSkip: true, maxTicksLimit: 8 },
+          ticks: {
+            color: "#64748b",
+            font: { family: "IBM Plex Mono", size: 10 },
+            autoSkip: false,
+            minRotation: horizontal ? 0 : 55,
+            maxRotation: horizontal ? 0 : 55
+          },
           grid: { color: "#eef2f7" }
         },
         y: {
@@ -327,6 +493,114 @@ function buildOrUpdateChart(chartRef, canvasId, labels, values, color, horizonta
   chartRef.data.datasets[0].data = values;
   chartRef.update();
   return chartRef;
+}
+
+function getPlantEntries(plantTotals) {
+  return Object.entries(plantTotals || {})
+    .map(([k, v]) => [k, Number(v) || 0])
+    .filter(([,v]) => v > 0)
+    .sort((a, b) => (b[1] - a[1]) || a[0].localeCompare(b[0]));
+}
+
+function buildOrUpdatePlantLeaderboard(chartRef, labels, values) {
+  const cfg = {
+    type: "bar",
+    data: {
+      labels,
+      datasets: [{
+        data: values,
+        borderRadius: 8,
+        borderSkipped: false,
+        backgroundColor: (ctx) => {
+          const chart = ctx.chart;
+          const { chartArea } = chart;
+          if (!chartArea) return "#3b82f6";
+          const g = chart.ctx.createLinearGradient(chartArea.left, 0, chartArea.right, 0);
+          g.addColorStop(0, "#93c5fd");
+          g.addColorStop(1, "#2563eb");
+          return g;
+        }
+      }]
+    },
+    options: {
+      indexAxis: "y",
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        datalabels: {
+          color: "#1e293b",
+          anchor: "end",
+          align: "right",
+          offset: 4,
+          formatter: (v) => fmt(v),
+          font: { family: "IBM Plex Mono", size: 10, weight: "600" }
+        }
+      },
+      scales: {
+        x: {
+          ticks: { color: "#64748b", font: { family: "IBM Plex Mono", size: 10 } },
+          grid: { color: "#edf2f7" }
+        },
+        y: {
+          ticks: { color: "#334155", font: { family: "IBM Plex Mono", size: 10 } },
+          grid: { display: false }
+        }
+      }
+    }
+  };
+  if (!chartRef) return new Chart(document.getElementById("plantLeaderboardChart"), cfg);
+  chartRef.data.labels = labels;
+  chartRef.data.datasets[0].data = values;
+  chartRef.update();
+  return chartRef;
+}
+
+function buildOrUpdatePlantDonut(chartRef, labels, values, colors) {
+  const cfg = {
+    type: "doughnut",
+    data: {
+      labels,
+      datasets: [{
+        data: values,
+        backgroundColor: colors,
+        borderWidth: 0,
+        hoverOffset: 6
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      cutout: "62%",
+      plugins: {
+        legend: { display: false },
+        datalabels: { display: false }
+      }
+    }
+  };
+  if (!chartRef) return new Chart(document.getElementById("plantDonutChart"), cfg);
+  chartRef.data.labels = labels;
+  chartRef.data.datasets[0].data = values;
+  chartRef.data.datasets[0].backgroundColor = colors;
+  chartRef.update();
+  return chartRef;
+}
+
+function renderPlantSideList(entries, total, colors) {
+  if (!plantSideListEl) return;
+  if (!entries.length) {
+    plantSideListEl.innerHTML = '<li><span class="rank">-</span><span>No plant totals</span><span>0</span><span class="share">0%</span></li>';
+    return;
+  }
+  plantSideListEl.innerHTML = entries.map(([name, val], i) => {
+    const share = total > 0 ? ((val / total) * 100) : 0;
+    return `<li>
+      <span class="rank">${i + 1}</span>
+      <span><span class="dot" style="background:${colors[i]}"></span> ${name}</span>
+      <span>${fmt(val)}</span>
+      <span class="share">${share.toFixed(1)}%</span>
+    </li>`;
+  }).join("");
 }
 
 function updateDynamicFilters(rows) {
@@ -357,6 +631,10 @@ async function refreshCharts() {
     const to = qs.get("timeto") || "{{ timeto }}";
     const selectedProject = qs.get("project") || "ALL";
     const selectedLine = qs.get("line") || "ALL";
+    const lineSlotHeading = document.getElementById("line-slot-heading");
+    if (lineSlotHeading) {
+      lineSlotHeading.textContent = `Line-wise Production (${toSlotHeaderLabel(from, to)})`;
+    }
 
     const [liveRes, breakdownRes, todayRes] = await Promise.all([
       fetch("/api/live_total?plant=ALL", { cache: "no-store" }),
@@ -368,13 +646,19 @@ async function refreshCharts() {
     const live = await liveRes.json();
     const breakdown = await breakdownRes.json();
     const todayBreakdown = await todayRes.json();
-    const plantTotals = live.plant_totals || {};
-    const plantLabels = Object.keys(plantTotals);
-    const plantValues = plantLabels.map(k => plantTotals[k]);
-    plantChart = buildOrUpdateChart(plantChart, "plantChart", plantLabels, plantValues, "#3b82f6", true);
+    const slotRows = breakdown.rows || [];
+    const plantEntries = getPlantEntries(live.plant_totals || {});
+    const plantLabels = plantEntries.map(([k]) => k);
+    const plantValues = plantEntries.map(([,v]) => v);
+    const plantTotal = plantValues.reduce((s, v) => s + v, 0);
+    const plantColors = plantEntries.map((_, i) => `hsl(${212 + (i * 19)} 78% ${56 - Math.min(i * 2, 16)}%)`);
+
+    plantLeaderboardChart = buildOrUpdatePlantLeaderboard(plantLeaderboardChart, plantLabels, plantValues);
+    plantDonutChart = buildOrUpdatePlantDonut(plantDonutChart, plantLabels, plantValues, plantColors);
+    renderPlantSideList(plantEntries, plantTotal, plantColors);
     document.getElementById("asof").textContent = "Last updated: " + (live.as_of || "").replace("T", " ");
 
-    const rows = breakdown.rows || [];
+    const rows = slotRows;
     updateDynamicFilters(rows);
     const filtered = rows.filter(r =>
       (selectedProject === "ALL" || r.ProjCode === selectedProject) &&
@@ -385,11 +669,10 @@ async function refreshCharts() {
     filtered.forEach(r => { lineMap[r.Line] = (lineMap[r.Line] || 0) + (r.ProdQty || 0); });
     const topLineEntries = Object.entries(lineMap)
       .sort((a, b) => (b[1] - a[1]) || a[0].localeCompare(b[0]))
-      .slice(0, 20)
       .sort((a, b) => a[0].localeCompare(b[0], undefined, { numeric: true, sensitivity: "base" }));
     const lineLabels = topLineEntries.map(([k]) => k);
     const lineValues = topLineEntries.map(([,v]) => v);
-    lineChart = buildOrUpdateChart(lineChart, "lineChart", lineLabels, lineValues, "#f59e0b", true);
+    lineChart = buildOrUpdateChart(lineChart, "lineChart", lineLabels, lineValues, "#f59e0b", false);
 
     const todayRows = (todayBreakdown.rows || []).filter(r =>
       (selectedProject === "ALL" || r.ProjCode === selectedProject) &&
@@ -399,11 +682,10 @@ async function refreshCharts() {
     todayRows.forEach(r => { lineTodayMap[r.Line] = (lineTodayMap[r.Line] || 0) + (r.ProdQty || 0); });
     const lineTodayEntries = Object.entries(lineTodayMap)
       .sort((a, b) => (b[1] - a[1]) || a[0].localeCompare(b[0]))
-      .slice(0, 20)
       .sort((a, b) => a[0].localeCompare(b[0], undefined, { numeric: true, sensitivity: "base" }));
     const lineTodayLabels = lineTodayEntries.map(([k]) => k);
     const lineTodayValues = lineTodayEntries.map(([,v]) => v);
-    lineTodayChart = buildOrUpdateChart(lineTodayChart, "lineTodayChart", lineTodayLabels, lineTodayValues, "#2563eb", true);
+    lineTodayChart = buildOrUpdateChart(lineTodayChart, "lineTodayChart", lineTodayLabels, lineTodayValues, "#2563eb", false);
     if (firstLoad) {
       hideLoading();
       firstLoad = false;
@@ -423,6 +705,36 @@ if (refreshSecEl) refreshSecEl.textContent = String(Math.floor(AUTO_REFRESH_MS /
 refreshCharts();
 setInterval(refreshCharts, AUTO_REFRESH_MS);
 </script>
+<script>
+(() => {
+  const root = document.documentElement;
+  const key = "pd_theme";
+  const btn = document.getElementById("profile-btn");
+  const pop = document.getElementById("profile-pop");
+  const toggle = document.getElementById("theme-toggle");
+  const state = document.getElementById("theme-state");
+  const getTheme = () => root.getAttribute("data-theme") === "dark" ? "dark" : "light";
+  const setTheme = (t) => {
+    root.setAttribute("data-theme", t);
+    localStorage.setItem(key, t);
+    if (state) state.textContent = t === "dark" ? "On" : "Off";
+  };
+  setTheme(getTheme());
+  if (btn && pop) {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const open = pop.classList.toggle("open");
+      btn.setAttribute("aria-expanded", open ? "true" : "false");
+    });
+    document.addEventListener("click", (e) => {
+      if (!pop.contains(e.target) && e.target !== btn) {
+        pop.classList.remove("open");
+        btn.setAttribute("aria-expanded", "false");
+      }
+    });
+  }
+  if (toggle) toggle.addEventListener("click", () => setTheme(getTheme() === "dark" ? "light" : "dark"));
+})();
+</script>
 </body>
 </html>
-
