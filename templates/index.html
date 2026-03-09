@@ -3,604 +3,1029 @@
 <head>
   <meta charset="utf-8">
   <title>Production Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
   <script>
     (function () {
-      const key = "pd_theme";
-      const saved = localStorage.getItem(key);
-      if (saved === "dark" || saved === "light") {
-        document.documentElement.setAttribute("data-theme", saved);
-      }
+      const saved = localStorage.getItem("pd_theme");
+      if (saved === "dark" || saved === "light") document.documentElement.setAttribute("data-theme", saved);
+      else document.documentElement.setAttribute("data-theme", "dark");
     })();
   </script>
-
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg:          #eef1f6;
-      --surface:     #ffffff;
-      --surface2:    #f5f7fa;
-      --surface3:    #edf0f5;
-      --border:      #dde1ea;
-      --border2:     #c8cedb;
-      --text:        #0f172a;
-      --text2:       #334155;
-      --muted:       #64748b;
-      --muted2:      #94a3b8;
+      --bg:         #060b14;
+      --bg2:        #090f1c;
+      --surface:    #0d1526;
+      --surface2:   #111d35;
+      --surface3:   #16243f;
+      --border:     #1e2e4a;
+      --border2:    #283d61;
+      --text:       #e8edf5;
+      --text2:      #b8c5d8;
+      --muted:      #6b7f9a;
+      --muted2:     #4a5e7a;
 
-      --blue:        #2563eb;
-      --blue-lt:     #eff6ff;
-      --blue-mid:    #bfdbfe;
-      --blue-dark:   #1d4ed8;
-      --blue-xlt:    #f0f7ff;
+      --amber:      #f59e0b;
+      --amber-lt:   rgba(245,158,11,.12);
+      --amber-mid:  rgba(245,158,11,.3);
+      --amber-dark: #d97706;
+      --amber-glow: rgba(245,158,11,.2);
 
-      --green:       #16a34a;
-      --green-lt:    #f0fdf4;
-      --green-mid:   #bbf7d0;
-      --green-dark:  #15803d;
-      --green-xlt:   #ecfdf5;
+      --green:      #10b981;
+      --green-lt:   rgba(16,185,129,.1);
+      --green-mid:  rgba(16,185,129,.3);
+      --green-dark: #059669;
+      --green-glow: rgba(16,185,129,.18);
 
-      --amber:       #b45309;
-      --amber-lt:    #fffbeb;
-      --amber-mid:   #fde68a;
-      --amber-text:  #92400e;
+      --blue:       #3b82f6;
+      --blue-lt:    rgba(59,130,246,.1);
+      --blue-mid:   rgba(59,130,246,.3);
+      --blue-dark:  #2563eb;
 
-      --red:         #dc2626;
-      --red-lt:      #fef2f2;
+      --red:        #ef4444;
+      --red-lt:     rgba(239,68,68,.1);
 
-      --radius-sm:   6px;
-      --radius:      10px;
-      --radius-lg:   14px;
-      --radius-xl:   18px;
-      --shadow-sm:   0 1px 3px rgba(0,0,0,.05), 0 1px 2px rgba(0,0,0,.03);
-      --shadow:      0 4px 14px rgba(0,0,0,.07), 0 1px 3px rgba(0,0,0,.04);
-      --shadow-lg:   0 10px 32px rgba(0,0,0,.09), 0 2px 8px rgba(0,0,0,.04);
+      --radius-sm:  5px;
+      --radius:     9px;
+      --radius-lg:  14px;
+      --radius-xl:  20px;
+
+      --shadow:     0 4px 24px rgba(0,0,0,.4);
+      --shadow-lg:  0 12px 48px rgba(0,0,0,.5);
+      --glow-amber: 0 0 20px rgba(245,158,11,.15);
+      --glow-green: 0 0 20px rgba(16,185,129,.15);
+
+      --sidebar-w:  220px;
+      --header-h:   60px;
     }
-    :root[data-theme="dark"] {
-      --bg:          #0b1220;
-      --surface:     #0f172a;
-      --surface2:    #111d34;
-      --surface3:    #17243c;
-      --border:      #24344f;
-      --border2:     #33496b;
-      --text:        #e2e8f0;
-      --text2:       #cbd5e1;
-      --muted:       #93a4bd;
-      --muted2:      #7f93af;
-      --blue-lt:     #13284f;
-      --blue-mid:    #2b4f85;
-      --blue-xlt:    #172a46;
-      --green-lt:    #0f2a1b;
-      --green-mid:   #245d40;
-      --green-xlt:   #11261b;
-      --amber-lt:    #2a1f0f;
-      --amber-mid:   #7a6028;
-      --amber-text:  #f0c879;
-      --red-lt:      #2f1618;
-      --shadow-sm:   0 1px 2px rgba(0,0,0,.35), 0 1px 4px rgba(0,0,0,.25);
-      --shadow:      0 6px 18px rgba(0,0,0,.35), 0 1px 4px rgba(0,0,0,.25);
-      --shadow-lg:   0 10px 28px rgba(0,0,0,.4), 0 2px 8px rgba(0,0,0,.3);
+    :root[data-theme="light"] {
+      --bg:         #f0f4f8;
+      --bg2:        #e8edf5;
+      --surface:    #ffffff;
+      --surface2:   #f5f8fc;
+      --surface3:   #eef2f8;
+      --border:     #dae0ec;
+      --border2:    #c4cfe0;
+      --text:       #0f1a2e;
+      --text2:      #2d3f5a;
+      --muted:      #5a6e8a;
+      --muted2:     #8a9ab5;
+      --amber:      #d97706;
+      --amber-lt:   rgba(217,119,6,.08);
+      --amber-mid:  rgba(217,119,6,.25);
+      --amber-dark: #b45309;
+      --amber-glow: rgba(217,119,6,.12);
+      --green-lt:   rgba(5,150,105,.08);
+      --green-mid:  rgba(5,150,105,.25);
+      --green-glow: rgba(5,150,105,.12);
+      --blue-lt:    rgba(37,99,235,.07);
+      --blue-mid:   rgba(37,99,235,.22);
+      --red-lt:     rgba(220,38,38,.07);
+      --shadow:     0 2px 16px rgba(0,0,0,.08);
+      --shadow-lg:  0 8px 32px rgba(0,0,0,.12);
+      --glow-amber: 0 0 16px rgba(217,119,6,.1);
+      --glow-green: 0 0 16px rgba(5,150,105,.1);
     }
 
     body {
-      font-family: "Plus Jakarta Sans", sans-serif;
+      font-family: "Syne", sans-serif;
       background: var(--bg);
       color: var(--text);
       min-height: 100vh;
+      display: flex;
     }
 
-    /* ══ NAVBAR ═══════════════════════════════════════════════════════ */
-    .navbar {
+    /* ══ SIDEBAR ══════════════════════════════════════════════════════════ */
+    .sidebar {
+      width: var(--sidebar-w);
+      min-height: 100vh;
       background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0; left: 0;
+      z-index: 200;
+      transition: transform .25s cubic-bezier(.4,0,.2,1);
+    }
+
+    .sb-logo {
+      padding: 20px 20px 18px;
       border-bottom: 1px solid var(--border);
-      height: 58px;
-      padding: 0 28px;
-      display: flex; align-items: center; justify-content: space-between;
-      position: sticky; top: 0; z-index: 300;
-      box-shadow: var(--shadow-sm);
+      display: flex;
+      align-items: center;
+      gap: 11px;
     }
-    .nb-left { display: flex; align-items: center; gap: 14px; }
-    .nb-logo {
-      width: 34px; height: 34px; border-radius: 9px;
-      background: var(--blue);
-      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    .sb-icon {
+      width: 36px; height: 36px;
+      border-radius: 10px;
+      background: var(--amber);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      box-shadow: var(--glow-amber);
     }
-    .nb-logo svg { stroke: #fff; }
-    .nb-title { font-size: 0.93rem; font-weight: 700; letter-spacing: -0.02em; }
-    .nb-sub {
-      font-size: 0.67rem; color: var(--muted);
-      font-family: "IBM Plex Mono", monospace; margin-top: 1px;
+    .sb-icon svg { color: #fff; }
+    .sb-brand { }
+    .sb-brand-name {
+      font-size: 0.85rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--text);
+      line-height: 1;
     }
-    .nb-sep { width: 1px; height: 20px; background: var(--border); }
-    .nb-right { display: flex; align-items: center; gap: 10px; }
-    .nb-nav { display: flex; align-items: center; gap: 8px; }
-    .nb-link {
+    .sb-brand-sub {
+      font-family: "DM Mono", monospace;
+      font-size: 0.6rem;
+      color: var(--muted);
+      margin-top: 3px;
+      letter-spacing: .05em;
+    }
+
+    .sb-live {
+      margin: 14px 16px 0;
+      display: flex; align-items: center; gap: 7px;
+      background: var(--green-lt);
+      border: 1px solid var(--green-mid);
+      border-radius: var(--radius-sm);
+      padding: 7px 10px;
+    }
+    .live-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 0 0 var(--green);
+      animation: livePulse 2s infinite;
+      flex-shrink: 0;
+    }
+    @keyframes livePulse {
+      0% { box-shadow: 0 0 0 0 rgba(16,185,129,.5); }
+      70% { box-shadow: 0 0 0 8px rgba(16,185,129,0); }
+      100% { box-shadow: 0 0 0 0 rgba(16,185,129,0); }
+    }
+    .live-label {
+      font-family: "DM Mono", monospace;
+      font-size: 0.62rem;
+      font-weight: 500;
+      color: var(--green);
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+    .live-time {
+      font-family: "DM Mono", monospace;
+      font-size: 0.58rem;
+      color: var(--muted);
+      margin-left: auto;
+    }
+
+    .sb-nav {
+      flex: 1;
+      padding: 18px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .sb-section-label {
+      font-family: "DM Mono", monospace;
+      font-size: 0.55rem;
+      color: var(--muted2);
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      padding: 6px 10px 4px;
+      margin-top: 6px;
+    }
+    .sb-link {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 9px 10px;
+      border-radius: var(--radius-sm);
+      text-decoration: none;
+      color: var(--muted);
+      font-size: 0.8rem;
+      font-weight: 600;
+      transition: all .15s;
+      border: 1px solid transparent;
+      position: relative;
+    }
+    .sb-link svg { flex-shrink: 0; transition: color .15s; }
+    .sb-link:hover {
+      color: var(--text2);
+      background: var(--surface2);
+      border-color: var(--border);
+    }
+    .sb-link.active {
+      color: var(--amber);
+      background: var(--amber-lt);
+      border-color: var(--amber-mid);
+    }
+    .sb-link.active svg { color: var(--amber); }
+    .sb-badge {
+      margin-left: auto;
+      font-family: "DM Mono", monospace;
+      font-size: 0.6rem;
+      background: var(--amber);
+      color: #fff;
+      border-radius: 999px;
+      padding: 1px 7px;
+      font-weight: 500;
+    }
+
+    .sb-plants {
+      padding: 14px 16px;
+      border-top: 1px solid var(--border);
+    }
+    .sb-plants-title {
+      font-family: "DM Mono", monospace;
+      font-size: 0.55rem;
+      color: var(--muted2);
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+    .plant-pill {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 0;
+      font-size: 0.74rem;
+      color: var(--text2);
+    }
+    .plant-pill + .plant-pill { border-top: 1px solid var(--border); }
+    .plant-name {
+      font-family: "DM Mono", monospace;
+      font-size: 0.66rem;
+      font-weight: 500;
+      letter-spacing: .04em;
+    }
+    .plant-val {
+      font-family: "DM Mono", monospace;
+      font-size: 0.7rem;
+      font-weight: 500;
+      color: var(--amber);
+    }
+
+    .sb-bottom {
+      padding: 14px 10px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .sb-btn {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 8px 10px;
+      border-radius: var(--radius-sm);
       text-decoration: none;
       color: var(--muted);
       font-size: 0.78rem;
       font-weight: 600;
-      padding: 6px 11px;
-      border-radius: 8px;
-      border: 1px solid transparent;
-      transition: all .14s;
-    }
-    .nb-link:hover { color: var(--text2); background: var(--surface2); border-color: var(--border); }
-    .nb-link.active {
-      color: var(--blue-dark);
-      background: var(--blue-lt);
-      border-color: var(--blue-mid);
-    }
-    .badge-live {
-      display: flex; align-items: center; gap: 6px;
-      background: var(--green-lt); border: 1px solid var(--green-mid);
-      border-radius: 999px; padding: 4px 11px;
-      font-size: 0.68rem; font-weight: 700;
-      color: var(--green-dark); font-family: "IBM Plex Mono", monospace;
-      letter-spacing: .04em; text-transform: uppercase;
-    }
-    .dot-live {
-      width: 7px; height: 7px; border-radius: 50%;
-      background: var(--green); flex-shrink: 0;
-      animation: blink 1.8s infinite;
-    }
-    @keyframes blink {
-      0%,100% { opacity:1; box-shadow: 0 0 0 0 rgba(22,163,74,.5); }
-      50%      { box-shadow: 0 0 0 5px rgba(22,163,74,0); }
-    }
-    .nb-date {
-      font-family: "IBM Plex Mono", monospace;
-      font-size: 0.72rem; color: var(--muted);
-      background: var(--surface2); border: 1px solid var(--border);
-      border-radius: var(--radius-sm); padding: 4px 10px;
-    }
-    .btn-logout {
-      display: flex; align-items: center; gap: 6px;
-      font-size: 0.77rem; font-weight: 600; color: var(--muted);
-      background: var(--surface); border: 1px solid var(--border2);
-      border-radius: var(--radius-sm); padding: 0 13px; height: 32px;
-      text-decoration: none; transition: all .14s;
-    }
-    .btn-logout:hover { color: var(--red); border-color: #fca5a5; background: var(--red-lt); }
-    .profile-menu { position: relative; }
-    .profile-btn {
-      width: 34px; height: 34px; border-radius: 999px;
-      border: 1px solid var(--border2);
-      background: var(--surface);
-      color: var(--muted);
-      display: inline-flex; align-items: center; justify-content: center;
       cursor: pointer;
-      transition: all .14s;
+      border: 1px solid transparent;
+      background: transparent;
+      width: 100%;
+      font-family: "Syne", sans-serif;
+      transition: all .15s;
     }
-    .profile-btn:hover { color: var(--text2); border-color: var(--blue-mid); background: var(--surface2); }
-    .profile-pop {
-      position: absolute;
-      right: 0;
-      top: calc(100% + 8px);
-      min-width: 220px;
+    .sb-btn:hover { color: var(--text2); background: var(--surface2); border-color: var(--border); }
+    .sb-btn.danger:hover { color: var(--red); background: var(--red-lt); }
+
+    /* ══ MAIN CONTENT ══════════════════════════════════════════════════════ */
+    .main {
+      flex: 1;
+      margin-left: var(--sidebar-w);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ══ TOPBAR ════════════════════════════════════════════════════════════ */
+    .topbar {
+      height: var(--header-h);
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .topbar-title {
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--text);
+    }
+    .topbar-sep { width: 1px; height: 18px; background: var(--border2); }
+    .topbar-sub {
+      font-family: "DM Mono", monospace;
+      font-size: 0.68rem;
+      color: var(--muted);
+    }
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .topbar-date {
+      font-family: "DM Mono", monospace;
+      font-size: 0.68rem;
+      color: var(--muted);
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 5px 11px;
+    }
+    .topbar-btn {
+      display: flex; align-items: center; justify-content: center;
+      width: 32px; height: 32px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border2);
+      background: var(--surface2);
+      color: var(--muted);
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .topbar-btn:hover { color: var(--text2); border-color: var(--amber-mid); }
+
+    /* ══ SHIFT BANNER ══════════════════════════════════════════════════════ */
+    .shift-banner {
+      background: var(--surface2);
+      border-bottom: 1px solid var(--border);
+      padding: 0 28px;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      height: 48px;
+      overflow: hidden;
+    }
+    .shift-label {
+      font-family: "DM Mono", monospace;
+      font-size: 0.62rem;
+      color: var(--muted2);
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      white-space: nowrap;
+    }
+    .shift-value {
+      font-family: "DM Mono", monospace;
+      font-size: 0.72rem;
+      font-weight: 500;
+      color: var(--text2);
+      white-space: nowrap;
+    }
+    .shift-sep { width: 1px; height: 20px; background: var(--border2); flex-shrink: 0; }
+    .shift-progress-wrap {
+      flex: 1;
+      height: 4px;
+      background: var(--border);
+      border-radius: 999px;
+      overflow: hidden;
+      max-width: 200px;
+    }
+    .shift-progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, var(--amber), var(--green));
+      border-radius: 999px;
+      transition: width 1s ease;
+    }
+    .shift-delta {
+      font-family: "DM Mono", monospace;
+      font-size: 0.72rem;
+      font-weight: 500;
+      padding: 3px 10px;
+      border-radius: 999px;
+    }
+    .shift-delta.ahead { background: var(--green-lt); color: var(--green); border: 1px solid var(--green-mid); }
+    .shift-delta.behind { background: var(--amber-lt); color: var(--amber); border: 1px solid var(--amber-mid); }
+
+    /* ══ PAGE CONTENT ══════════════════════════════════════════════════════ */
+    .page {
+      padding: 28px 28px 60px;
+      max-width: 1440px;
+      width: 100%;
+    }
+
+    /* ══ SECTION HEADER ════════════════════════════════════════════════════ */
+    .sec-head {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .sec-label {
+      font-family: "DM Mono", monospace;
+      font-size: 0.58rem;
+      color: var(--muted2);
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 3px 9px;
+    }
+    .sec-title {
+      font-size: 0.9rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--text);
+    }
+    .sec-sub {
+      font-family: "DM Mono", monospace;
+      font-size: 0.64rem;
+      color: var(--muted);
+    }
+    .sec-line { flex: 1; height: 1px; background: var(--border); }
+
+    /* ══ HERO GAUGE ════════════════════════════════════════════════════════ */
+    .hero-section {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+
+    .gauge-card {
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 10px;
+      border-radius: var(--radius-xl);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
       box-shadow: var(--shadow);
-      padding: 6px;
-      display: none;
-      z-index: 350;
     }
-    .profile-pop.open { display: block; }
-    .pm-item {
+    .gauge-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 50% 0%, var(--amber-lt) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .gauge-svg-wrap {
+      position: relative;
+      width: 180px;
+      height: 180px;
+      margin-bottom: 12px;
+    }
+    .gauge-svg {
       width: 100%;
-      text-decoration: none;
-      border: none;
-      background: transparent;
-      color: var(--text2);
-      font-family: "Plus Jakarta Sans", sans-serif;
-      font-size: .78rem;
-      border-radius: 8px;
-      padding: 8px 9px;
-      display: flex; align-items: center; justify-content: space-between; gap: 8px;
-      cursor: pointer;
+      height: 100%;
+      transform: rotate(-135deg);
     }
-    .pm-item:hover { background: var(--surface2); }
-    .pm-item-left { display: inline-flex; align-items: center; gap: 8px; }
-    .pm-item.danger { color: #ef4444; }
-    .pm-item.danger:hover { background: var(--red-lt); }
-    .pm-state {
-      font-family: "IBM Plex Mono", monospace;
-      font-size: .68rem;
+    .gauge-track {
+      fill: none;
+      stroke: var(--border2);
+      stroke-width: 8;
+      stroke-linecap: round;
+    }
+    .gauge-fill {
+      fill: none;
+      stroke: url(#gaugeGrad);
+      stroke-width: 8;
+      stroke-linecap: round;
+      stroke-dasharray: 282;
+      stroke-dashoffset: 282;
+      transition: stroke-dashoffset 1.4s cubic-bezier(.4,0,.2,1);
+    }
+    .gauge-center {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .gauge-num {
+      font-family: "DM Mono", monospace;
+      font-size: 1.9rem;
+      font-weight: 500;
+      color: var(--amber);
+      letter-spacing: -0.04em;
+      line-height: 1;
+    }
+    .gauge-unit {
+      font-family: "DM Mono", monospace;
+      font-size: 0.62rem;
       color: var(--muted);
-      border: 1px solid var(--border2);
-      border-radius: 999px;
-      padding: 2px 8px;
+      letter-spacing: .08em;
+      margin-top: 4px;
+      text-transform: uppercase;
+    }
+    .gauge-label {
+      font-family: "DM Mono", monospace;
+      font-size: 0.6rem;
+      color: var(--muted);
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      text-align: center;
+    }
+    .gauge-pct {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--green);
+      text-align: center;
+      margin-top: 4px;
     }
 
-    /* ══ PAGE SHELL ════════════════════════════════════════════════════ */
-    .page { max-width: 1440px; margin: 0 auto; padding: 26px 28px 60px; }
-
-    /* ══ SECTION HEADER ════════════════════════════════════════════════ */
-    .sec-head { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
-    .sec-icon {
-      width: 26px; height: 26px; border-radius: 7px;
-      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-    }
-    .sec-icon.green { background: var(--green-lt); color: var(--green); }
-    .sec-icon.blue  { background: var(--blue-lt);  color: var(--blue);  }
-    .sec-title { font-size: 0.8rem; font-weight: 700; color: var(--text2); }
-    .sec-sub   { font-size: 0.68rem; color: var(--muted); font-family: "IBM Plex Mono", monospace; margin-left: 6px; }
-    .sec-line  { flex: 1; height: 1px; background: var(--border); }
-
-    /* ══ LIVE COUNTER STRIP ═══════════════════════════════════════════ */
-    .live-section { margin-bottom: 26px; }
-
-    .live-strip {
+    /* ══ LIVE COUNTER GRID ════════════════════════════════════════════════ */
+    .counters-grid {
       display: grid;
-      grid-template-columns: 1.35fr repeat(5, minmax(148px, 1fr));
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(2, 1fr);
       gap: 10px;
     }
 
     .lc {
-      background: linear-gradient(180deg, #ffffff 0%, #fbfcff 100%);
-      border: 1px solid #dbe4f1;
-      border-radius: 16px;
-      padding: 12px 14px;
-      min-height: 86px;
-      box-shadow: 0 8px 22px rgba(15, 23, 42, 0.05), 0 1px 2px rgba(15, 23, 42, 0.06);
-      position: relative; overflow: hidden;
-      display: flex; flex-direction: column; justify-content: center;
-      transition: box-shadow .18s, transform .18s, border-color .18s;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      position: relative;
+      overflow: hidden;
+      transition: border-color .2s, box-shadow .2s;
     }
     .lc::after {
       content: "";
       position: absolute;
-      inset: auto 0 0 0;
-      height: 3px;
-      background: linear-gradient(90deg, rgba(148,163,184,.35), rgba(148,163,184,.08));
+      bottom: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--amber-mid), transparent);
+      opacity: 0;
+      transition: opacity .2s;
     }
-    .lc:hover {
-      transform: translateY(-2px);
-      border-color: #c2d3ea;
-      box-shadow: 0 16px 28px rgba(15, 23, 42, 0.08), 0 2px 6px rgba(15, 23, 42, 0.07);
-    }
+    .lc:hover { border-color: var(--amber-mid); box-shadow: var(--glow-amber); }
+    .lc:hover::after { opacity: 1; }
 
-    /* Total card accent */
-    .lc.grand {
-      border-color: #8fb6f9;
-      background: linear-gradient(138deg, #e9f2ff 0%, #ffffff 56%);
+    .lc-tag {
+      font-family: "DM Mono", monospace;
+      font-size: 0.55rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: .12em;
+      color: var(--muted2);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
-    .lc.grand::before {
-      content: ""; position: absolute;
-      top: 0; left: 0; right: 0; height: 4px;
-      background: linear-gradient(90deg, var(--blue), #5b9bff);
+    .lc-tag::before {
+      content: "";
+      width: 4px; height: 4px;
+      border-radius: 50%;
+      background: var(--amber);
+      flex-shrink: 0;
     }
-    .lc.grand::after {
-      background: linear-gradient(90deg, rgba(37,99,235,.5), rgba(37,99,235,.12));
-    }
-
-    .lc-plant {
-      font-family: "IBM Plex Mono", monospace;
-      font-size: 0.58rem; font-weight: 600;
-      text-transform: uppercase; letter-spacing: .1em;
-      color: var(--muted); margin-bottom: 8px;
-    }
-    .lc.grand .lc-plant { color: var(--blue); }
-
     .lc-num {
-      font-family: "IBM Plex Mono", monospace;
-      font-size: 1.55rem; font-weight: 700;
-      color: var(--text); letter-spacing: -0.03em; line-height: 1;
-      transition: color .2s, transform .2s;
+      font-family: "DM Mono", monospace;
+      font-size: 1.5rem;
+      font-weight: 400;
+      color: var(--text);
+      letter-spacing: -0.03em;
+      line-height: 1;
+      transition: color .3s;
     }
-    .lc.grand .lc-num { font-size: 2rem; color: var(--blue); }
-    .lc:hover .lc-num { transform: translateY(-1px); }
-
-    .live-meta {
-      display: flex; align-items: center; gap: 7px; margin-top: 12px;
-      font-size: 0.67rem; color: var(--muted);
-      font-family: "IBM Plex Mono", monospace;
+    .lc:hover .lc-num { color: var(--amber); }
+    .lc-trend {
+      font-family: "DM Mono", monospace;
+      font-size: 0.6rem;
+      color: var(--green);
+      margin-top: 6px;
     }
-    .live-meta .dot-live { width: 5px; height: 5px; }
 
-    /* ══ BREAKDOWN SECTION ════════════════════════════════════════════ */
-    .breakdown-section { }
+    @keyframes numFlip {
+      0% { transform: translateY(0); opacity: 1; }
+      40% { transform: translateY(-8px); opacity: 0; }
+      41% { transform: translateY(8px); opacity: 0; }
+      100% { transform: translateY(0); opacity: 1; }
+    }
+    .flipping { animation: numFlip .35s ease-out; }
 
-    /* ── Filter bar ─────────────────────────────────────── */
-    .filter-card {
+    /* ══ FILTER TOOLBAR ════════════════════════════════════════════════════ */
+    .filter-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+    .filter-label {
+      font-family: "DM Mono", monospace;
+      font-size: 0.6rem;
+      color: var(--muted2);
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      white-space: nowrap;
+    }
+    .fg {
+      display: flex;
+      align-items: center;
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      padding: 0;
-      box-shadow: var(--shadow-sm);
-      margin-bottom: 14px;
+      border-radius: var(--radius);
+      height: 34px;
       overflow: hidden;
+      transition: border-color .15s;
     }
-
-    .filter-header {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 12px 18px;
-      border-bottom: 1px solid var(--border);
-      background: var(--surface2);
-    }
-
-    .filter-header-left { display: flex; align-items: center; gap: 10px; }
-    .filter-title { font-size: 0.78rem; font-weight: 700; color: var(--text2); }
-    .slot-badge {
-      display: flex; align-items: center; gap: 5px;
-      background: var(--blue-lt);
-      border: 1px solid var(--blue-mid);
-      border-radius: 999px;
-      padding: 2px 10px;
-      font-size: 0.65rem; font-weight: 700;
-      color: var(--blue); font-family: "IBM Plex Mono", monospace;
-    }
-    .slot-badge.amber {
-      background: var(--amber-lt); border-color: var(--amber-mid);
-      color: var(--amber-text);
-    }
-
-    .filter-body {
-      padding: 14px 18px;
-      display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
-    }
-
-    .fg {
-      display: flex; align-items: center;
-      border: 1px solid var(--border2); border-radius: var(--radius);
-      overflow: hidden; height: 36px; background: var(--surface);
-    }
+    .fg:focus-within { border-color: var(--amber-mid); }
     .fg-lbl {
-      padding: 0 11px;
-      font-size: 0.62rem; font-weight: 700;
-      font-family: "IBM Plex Mono", monospace;
-      text-transform: uppercase; letter-spacing: .1em;
-      color: var(--muted);
-      border-right: 1px solid var(--border2);
-      height: 100%; display: flex; align-items: center;
-      white-space: nowrap; background: var(--surface3);
+      padding: 0 10px;
+      font-family: "DM Mono", monospace;
+      font-size: 0.58rem;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      color: var(--muted2);
+      border-right: 1px solid var(--border);
+      height: 100%;
+      display: flex;
+      align-items: center;
+      background: var(--surface2);
+      white-space: nowrap;
     }
     .fg select {
-      border: none; outline: none; background: transparent;
-      color: var(--text); font-family: "IBM Plex Mono", monospace;
-      font-size: 0.78rem; font-weight: 500;
-      padding: 0 8px 0 10px; cursor: pointer; height: 100%;
-      appearance: none; -webkit-appearance: none; min-width: 85px;
+      border: none;
+      outline: none;
+      background: transparent;
+      color: var(--text);
+      font-family: "DM Mono", monospace;
+      font-size: 0.72rem;
+      padding: 0 24px 0 10px;
+      cursor: pointer;
+      height: 100%;
+      appearance: none;
+      -webkit-appearance: none;
+      min-width: 80px;
     }
-    .fg select option { background: #fff; }
-    .fg-chevron {
-      padding-right: 8px; color: var(--muted2);
-      pointer-events: none; display: flex; align-items: center;
+    .fg select option { background: var(--surface); color: var(--text); }
+    .fg-chev {
+      padding-right: 8px;
+      color: var(--muted2);
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+      flex-shrink: 0;
     }
-
-    .filter-right {
-      margin-left: auto; display: flex; align-items: center; gap: 10px;
-    }
+    .filter-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
     .rspin {
-      display: none; width: 13px; height: 13px;
-      border: 2px solid var(--border2); border-top-color: var(--blue);
-      border-radius: 50%; animation: spin .55s linear infinite;
+      display: none;
+      width: 14px; height: 14px;
+      border: 2px solid var(--border2);
+      border-top-color: var(--amber);
+      border-radius: 50%;
+      animation: spin .5s linear infinite;
     }
     .rspin.on { display: block; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    .filter-hint {
-      font-size: 0.67rem; color: var(--muted);
-      font-family: "IBM Plex Mono", monospace;
+    /* ══ STATS ROW ════════════════════════════════════════════════════════ */
+    .stats-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
     }
-    .filter-hint strong { color: var(--text2); }
+    .stat-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 5px 12px;
+      font-family: "DM Mono", monospace;
+      font-size: 0.65rem;
+      color: var(--muted);
+    }
+    .stat-chip strong { color: var(--text); font-weight: 500; }
+    .stat-chip.amber { border-color: var(--amber-mid); background: var(--amber-lt); color: var(--amber-dark); }
+    .stat-chip.amber strong { color: var(--amber); }
+    .stat-chip.green { border-color: var(--green-mid); background: var(--green-lt); color: var(--green-dark); }
+    .stat-chip.green strong { color: var(--green); }
 
-    /* ── Stats row ──────────────────────────────────────── */
-    .stats-bar {
-      display: flex; align-items: center; gap: 8px;
-      margin-bottom: 10px; flex-wrap: wrap;
-    }
-    .sc {
-      display: inline-flex; align-items: center; gap: 6px;
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: var(--radius-sm); padding: 4px 11px;
-      font-size: 0.69rem; color: var(--muted);
-      font-family: "IBM Plex Mono", monospace;
-      box-shadow: var(--shadow-sm);
-    }
-    .sc strong { color: var(--text); font-weight: 600; }
-    .sc.green { border-color: var(--green-mid); background: var(--green-xlt); color: var(--green-dark); }
-    .sc.green strong { color: var(--green-dark); }
-    .sc.blue  { border-color: var(--blue-mid);  background: var(--blue-lt);  color: var(--blue); }
-    .sc.blue  strong { color: var(--blue-dark); }
-    .sc.amber { border-color: var(--amber-mid); background: var(--amber-lt); color: var(--amber); }
-    .sc.amber strong { color: var(--amber-text); }
-    .ml-auto  { margin-left: auto; }
-
-    /* ══ TABLE ════════════════════════════════════════════════════════ */
+    /* ══ TABLE ════════════════════════════════════════════════════════════ */
     .tbl-wrap {
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius-lg);
-      overflow: hidden; box-shadow: var(--shadow);
+      overflow: hidden;
+      box-shadow: var(--shadow);
     }
-
-    /* Column group headers */
-    .tbl-colgroup-header {
-      display: flex;
-      border-bottom: 1px solid var(--border);
-      background: var(--surface2);
-    }
-    .tcgh {
-      padding: 7px 16px;
-      font-size: 0.62rem; font-weight: 700;
-      font-family: "IBM Plex Mono", monospace;
-      text-transform: uppercase; letter-spacing: .08em;
-      color: var(--muted);
-      display: flex; align-items: center; gap: 5px;
-    }
-    .tcgh.identity { flex: 0 0 auto; min-width: 320px; border-right: 1px solid var(--border); }
-    .tcgh.today    { flex: 1; border-right: 1px solid var(--border); color: var(--blue); }
-    .tcgh.thishour { flex: 1; color: var(--amber); }
-    .tcgh-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
-
     .tbl-scroll { max-height: 520px; overflow-y: auto; }
-    .tbl-scroll::-webkit-scrollbar { width: 5px; }
+    .tbl-scroll::-webkit-scrollbar { width: 4px; }
     .tbl-scroll::-webkit-scrollbar-track { background: transparent; }
     .tbl-scroll::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 99px; }
 
     table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
 
     thead th {
-      background: #1a2235; color: #8896aa;
-      padding: 10px 16px;
-      font-family: "IBM Plex Mono", monospace;
-      font-size: 0.61rem; font-weight: 500;
-      letter-spacing: .1em; text-transform: uppercase;
-      user-select: none; cursor: pointer; white-space: nowrap;
-      position: sticky; top: 0; z-index: 5;
-      border-bottom: 2px solid #252f42;
+      background: var(--bg2);
+      color: var(--muted);
+      padding: 11px 16px;
+      font-family: "DM Mono", monospace;
+      font-size: 0.58rem;
+      font-weight: 400;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      user-select: none;
+      cursor: pointer;
+      white-space: nowrap;
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      border-bottom: 1px solid var(--border);
       transition: color .12s, background .12s;
     }
-    thead th:hover { color: #d1dae8; background: #1f2d42; }
-    thead th.sort-asc, thead th.sort-desc { color: #60a5fa; }
+    thead th:hover { color: var(--text2); background: var(--surface3); }
+    thead th.sort-asc, thead th.sort-desc { color: var(--amber); }
+    thead th.col-today { color: var(--blue); border-left: 1px solid var(--border); }
+    thead th.col-thishour { color: var(--amber); border-left: 1px solid var(--border); }
+    thead th.col-today:hover { color: #60a5fa; }
+    thead th.col-thishour:hover { color: var(--amber); }
 
-    /* Column grouping on thead */
-    thead th.col-identity { border-right: 1px solid #2e3d54; text-align: left; }
-    thead th.col-today    { border-right: 1px solid #2e3d54; color: #7eb0fc; }
-    thead th.col-thishour { color: #f6c86e; }
-    thead th.col-today:hover    { background: #1c2f46; color: #93c5fd; }
-    thead th.col-thishour:hover { background: #2a2214; color: #fde68a; }
-
-    .th-inner { display: inline-flex; align-items: center; gap: 6px; }
+    .th-inner { display: inline-flex; align-items: center; gap: 5px; }
     .th-inner.right { float: right; }
-    .sort-arr { display: inline-flex; flex-direction: column; gap: 2px; opacity: .18; transition: opacity .12s; flex-shrink: 0; }
+    .sort-arr { display: inline-flex; flex-direction: column; gap: 2px; opacity: .2; transition: opacity .12s; }
     .arr-u, .arr-d { display: block; width: 0; height: 0; border-left: 3px solid transparent; border-right: 3px solid transparent; }
     .arr-u { border-bottom: 4px solid currentColor; }
-    .arr-d { border-top:    4px solid currentColor; }
-    th.sort-asc  .sort-arr, th.sort-desc .sort-arr { opacity: 1; }
-    th.sort-asc  .arr-d { opacity: .15; }
-    th.sort-desc .arr-u { opacity: .15; }
+    .arr-d { border-top: 4px solid currentColor; }
+    th.sort-asc .sort-arr, th.sort-desc .sort-arr { opacity: 1; }
+    th.sort-asc .arr-d { opacity: .2; }
+    th.sort-desc .arr-u { opacity: .2; }
 
-    tbody tr { border-bottom: 1px solid var(--border); transition: background .08s; }
+    tbody tr {
+      border-bottom: 1px solid var(--border);
+      transition: background .08s;
+    }
     tbody tr:last-child { border-bottom: none; }
-    tbody tr:nth-child(even) { background: var(--surface2); }
-    tbody tr:hover { background: var(--blue-xlt) !important; }
+    tbody tr:hover { background: var(--surface2) !important; }
 
-    td { padding: 9px 16px; vertical-align: middle; }
+    td { padding: 10px 16px; vertical-align: middle; }
 
-    /* Identity group */
     td.col-proj {
-      font-family: "IBM Plex Mono", monospace;
-      font-size: 0.73rem; color: var(--blue); font-weight: 500;
+      font-family: "DM Mono", monospace;
+      font-size: 0.7rem;
+      color: var(--blue);
+      font-weight: 400;
     }
-    td.col-line { font-weight: 600; color: var(--text); }
+    td.col-line {
+      font-weight: 700;
+      font-size: 0.82rem;
+      color: var(--text);
+    }
     td.col-plant {
-      font-family: "IBM Plex Mono", monospace;
-      font-size: 0.7rem; font-weight: 600;
-      color: var(--amber); letter-spacing: .02em;
+      font-family: "DM Mono", monospace;
+      font-size: 0.68rem;
+      color: var(--amber);
+      letter-spacing: .04em;
     }
-    td.col-identity-last { border-right: 2px solid var(--border2); }
+    td.col-identity-last { border-right: 1px solid var(--border2); }
 
-    /* Today group */
     td.col-today-qty {
-      text-align: right; border-right: 1px solid var(--border);
+      text-align: right;
+      border-left: 1px solid var(--border);
       position: relative;
     }
-    td.col-today-qty .qty-num {
-      font-family: "IBM Plex Mono", monospace;
-      font-weight: 600; font-size: 0.87rem;
-      color: var(--blue-dark); position: relative; z-index: 1;
-    }
-    td.col-today-qty .qty-bar {
-      position: absolute; bottom: 0; left: 0;
-      height: 2px; background: var(--blue-mid);
-      transition: width .4s ease;
-    }
-
-    /* This Hour group */
     td.col-hour-qty {
       text-align: right;
+      border-left: 1px solid var(--border);
       position: relative;
     }
-    td.col-hour-qty .qty-num {
-      font-family: "IBM Plex Mono", monospace;
-      font-weight: 600; font-size: 0.87rem;
-      color: var(--amber-text); position: relative; z-index: 1;
+
+    .qty-cell {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 4px;
     }
-    td.col-hour-qty .qty-bar {
-      position: absolute; bottom: 0; left: 0;
-      height: 2px; background: var(--amber-mid);
-      transition: width .4s ease;
+    .qty-num {
+      font-family: "DM Mono", monospace;
+      font-size: 0.85rem;
+      font-weight: 500;
+      position: relative;
+      z-index: 1;
+    }
+    td.col-today-qty .qty-num { color: #60a5fa; }
+    td.col-hour-qty .qty-num { color: var(--amber); }
+
+    .qty-bar-track {
+      width: 80px;
+      height: 3px;
+      background: var(--surface3);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    td.col-today-qty .qty-bar-fill { background: var(--blue-mid); }
+    td.col-hour-qty  .qty-bar-fill { background: var(--amber-mid); }
+    .qty-bar-fill {
+      height: 100%;
+      border-radius: 99px;
+      transition: width .5s ease;
     }
 
-    /* Zero rows get dimmed */
-    tbody tr.zero-row td.col-today-qty .qty-num,
+    /* Heatmap overlay on cells */
+    .heat-bg {
+      position: absolute;
+      inset: 0;
+      opacity: 0.045;
+      pointer-events: none;
+      transition: opacity .2s;
+    }
+    td.col-today-qty .heat-bg { background: var(--blue); }
+    td.col-hour-qty  .heat-bg { background: var(--amber); }
+    tr:hover td .heat-bg { opacity: .08; }
+
+    tbody tr.zero-row td.col-today-qty .qty-num { color: var(--muted2); }
     tbody tr.zero-row td.col-hour-qty  .qty-num { color: var(--muted2); }
 
-    .empty-state {
-      text-align: center; padding: 64px 20px; color: var(--muted);
+    .row-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
     }
-    .empty-state .icon { font-size: 2rem; margin-bottom: 10px; }
-    .empty-state p { font-size: 0.78rem; color: var(--muted2); }
+    .status-dot {
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .status-dot.active { background: var(--green); box-shadow: 0 0 5px var(--green); }
+    .status-dot.idle   { background: var(--muted2); }
+    .status-dot.slow   { background: var(--amber); }
+
+    .empty-state {
+      text-align: center;
+      padding: 72px 24px;
+      color: var(--muted);
+    }
+    .empty-state .icon {
+      font-size: 2.4rem;
+      margin-bottom: 12px;
+      opacity: .5;
+    }
+    .empty-state p {
+      font-family: "DM Mono", monospace;
+      font-size: 0.74rem;
+      color: var(--muted2);
+    }
 
     .tbl-footer {
-      padding: 8px 16px; border-top: 1px solid var(--border);
-      font-family: "IBM Plex Mono", monospace;
-      font-size: 0.62rem; color: var(--muted);
-      display: flex; justify-content: space-between; flex-wrap: wrap; gap: 4px;
+      padding: 9px 16px;
+      border-top: 1px solid var(--border);
+      font-family: "DM Mono", monospace;
+      font-size: 0.6rem;
+      color: var(--muted2);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
     }
-    :root[data-theme="dark"] thead th {
-      background: #0b1426;
-      color: #9fb3d1;
-      border-bottom-color: #1d2d47;
+    .tbl-footer-right {
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
-    :root[data-theme="dark"] thead th:hover { background: #11203a; color: #c8d8f0; }
-    :root[data-theme="dark"] thead th.col-identity { border-right-color: #2a3e5f; }
-    :root[data-theme="dark"] thead th.col-today { border-right-color: #2a3e5f; color: #7ea7e6; }
-    :root[data-theme="dark"] thead th.col-thishour { color: #f4c36a; }
-    :root[data-theme="dark"] tbody tr:nth-child(even) { background: #101b2f; }
-    :root[data-theme="dark"] tbody tr:hover { background: #172844 !important; }
-    :root[data-theme="dark"] .lc {
-      background: linear-gradient(180deg, #0f172a 0%, #13203a 100%);
-      border-color: #24344f;
+    .tbl-asof {
+      color: var(--muted2);
     }
 
-    /* ══ PROGRESS + OVERLAY ═══════════════════════════════════════════ */
-    #progress-bar {
-      display: none; position: fixed; top: 0; left: 0;
-      height: 3px; width: 0;
-      background: linear-gradient(90deg, var(--blue), #60a5fa);
-      z-index: 9999; border-radius: 0 2px 2px 0;
-      box-shadow: 0 0 8px rgba(37,99,235,.35);
+    /* ══ SKELETON LOADER ═══════════════════════════════════════════════════ */
+    @keyframes shimmer {
+      0% { background-position: -600px 0; }
+      100% { background-position: 600px 0; }
     }
+    .skel {
+      background: linear-gradient(90deg, var(--surface2) 25%, var(--surface3) 50%, var(--surface2) 75%);
+      background-size: 600px 100%;
+      animation: shimmer 1.4s infinite;
+      border-radius: 4px;
+    }
+
+    /* ══ PROGRESS BAR ══════════════════════════════════════════════════════ */
+    #progress-bar {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      height: 2px;
+      width: 0;
+      background: linear-gradient(90deg, var(--amber), var(--green));
+      z-index: 9999;
+      border-radius: 0 2px 2px 0;
+    }
+
+    /* ══ LOADING OVERLAY ═══════════════════════════════════════════════════ */
     #loading-overlay {
-      display: none; position: fixed; inset: 0;
-      background: rgba(238,241,246,.8);
-      backdrop-filter: blur(3px); z-index: 9998;
-      align-items: center; justify-content: center;
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(6,11,20,.7);
+      backdrop-filter: blur(4px);
+      z-index: 9998;
+      align-items: center;
+      justify-content: center;
     }
     #loading-overlay.active { display: flex; }
     .loader-card {
-      background: var(--surface); border: 1px solid var(--border2);
-      border-radius: var(--radius-lg); padding: 26px 40px;
-      display: flex; flex-direction: column; align-items: center; gap: 12px;
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      border-radius: var(--radius-lg);
+      padding: 28px 44px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
       box-shadow: var(--shadow-lg);
     }
     .spinner {
-      width: 30px; height: 30px; border-radius: 50%;
-      border: 2px solid var(--border2); border-top-color: var(--blue);
-      animation: spin .6s linear infinite;
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      border: 2px solid var(--border2);
+      border-top-color: var(--amber);
+      animation: spin .55s linear infinite;
     }
-    .loader-text { font-size: 0.78rem; color: var(--muted); font-family: "IBM Plex Mono", monospace; }
+    .loader-text {
+      font-family: "DM Mono", monospace;
+      font-size: 0.72rem;
+      color: var(--muted);
+      letter-spacing: .05em;
+    }
 
-    @keyframes numBump { 0%{transform:scale(1)} 35%{transform:scale(1.07)} 100%{transform:scale(1)} }
-    .bumped { animation: numBump .28s ease-out; }
+    @keyframes numBump { 0%{transform:scale(1)} 35%{transform:scale(1.06)} 100%{transform:scale(1)} }
+    .bumped { animation: numBump .3s ease-out; }
 
+    /* ══ RESPONSIVE ════════════════════════════════════════════════════════ */
     @media (max-width: 1100px) {
-      .live-strip { grid-template-columns: 1fr 1fr 1fr; }
-      .lc.grand   { grid-column: span 3; }
-      .tcgh.identity { min-width: 200px; }
+      .hero-section { grid-template-columns: 1fr; }
+      .gauge-card { flex-direction: row; gap: 20px; padding: 20px 24px; }
+      .counters-grid { grid-template-columns: repeat(3, 1fr); grid-template-rows: auto; }
     }
-    @media (max-width: 700px) {
-      .page { padding: 14px 12px 48px; }
-      .navbar { padding: 0 14px; }
-      .nb-sub, .nb-sep { display: none; }
-      .live-strip { grid-template-columns: 1fr 1fr; }
-      .lc.grand   { grid-column: span 2; }
+    @media (max-width: 860px) {
+      :root { --sidebar-w: 0px; }
+      .sidebar { transform: translateX(-220px); }
+      .sidebar.open { transform: translateX(0); width: 220px; }
+      .main { margin-left: 0; }
+      .topbar { padding: 0 16px; }
+      .page { padding: 16px 14px 48px; }
+      .shift-banner { padding: 0 16px; gap: 12px; }
+      .counters-grid { grid-template-columns: repeat(2, 1fr); }
+      .hamburger { display: flex !important; }
     }
+    @media (max-width: 540px) {
+      .counters-grid { grid-template-columns: 1fr 1fr; }
+      .gauge-card { flex-direction: column; }
+      .shift-banner { display: none; }
+    }
+
+    .hamburger {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      width: 32px; height: 32px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border2);
+      background: var(--surface2);
+      color: var(--muted);
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .hamburger:hover { color: var(--text2); }
+
+    /* ══ COLGROUP HEADER ═══════════════════════════════════════════════════ */
+    .tbl-colgroup-header {
+      display: flex;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface2);
+    }
+    .tcgh {
+      padding: 5px 16px;
+      font-family: "DM Mono", monospace;
+      font-size: 0.56rem;
+      text-transform: uppercase;
+      letter-spacing: .12em;
+      color: var(--muted2);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .tcgh.identity { flex: 0 0 auto; min-width: 300px; border-right: 1px solid var(--border); }
+    .tcgh.today { flex: 1; border-right: 1px solid var(--border); color: #7eb4fc; border-left: 1px solid var(--border); }
+    .tcgh.thishour { flex: 1; color: var(--amber); border-left: 1px solid var(--border); }
+    .tcgh-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
   </style>
 </head>
 <body>
@@ -613,220 +1038,299 @@
   </div>
 </div>
 
-<!-- ══ NAVBAR ══════════════════════════════════════════════════════ -->
-<nav class="navbar">
-  <div class="nb-left">
-    <div class="nb-logo">
+<!-- ══ SIDEBAR ════════════════════════════════════════════════════════════ -->
+<aside class="sidebar" id="sidebar">
+  <div class="sb-logo">
+    <div class="sb-icon">
       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
         <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>
       </svg>
     </div>
-    <div>
-      <div class="nb-title">Production Dashboard</div>
-      <div class="nb-sub">Real-time meter production data</div>
+    <div class="sb-brand">
+      <div class="sb-brand-name">PRODUCTION</div>
+      <div class="sb-brand-sub">Real-time monitor · MTR</div>
     </div>
-    <div class="nb-sep"></div>
-    <div class="badge-live"><span class="dot-live"></span>LIVE</div>
   </div>
-  <div class="nb-right">
-    <div class="nb-nav">
-      <a href="{{ url_for('dashboard') }}" class="nb-link {% if page == 'dashboard' %}active{% endif %}">Dashboard</a>
-      <a href="{{ url_for('filter_page') }}" class="nb-link {% if page == 'filter' %}active{% endif %}">Filter</a>
-      <a href="{{ url_for('graph_page') }}" class="nb-link {% if page == 'graph' %}active{% endif %}">Graph</a>
+
+  <div class="sb-live">
+    <span class="live-dot"></span>
+    <span class="live-label">Live</span>
+    <span class="live-time" id="sb-time">—</span>
+  </div>
+
+  <nav class="sb-nav">
+    <div class="sb-section-label">Views</div>
+    <a href="{{ url_for('dashboard') }}" class="sb-link {% if page == 'dashboard' %}active{% endif %}">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      Dashboard
+    </a>
+    <a href="{{ url_for('filter_page') }}" class="sb-link {% if page == 'filter' %}active{% endif %}">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+      Filter
+    </a>
+    <a href="{{ url_for('graph_page') }}" class="sb-link {% if page == 'graph' %}active{% endif %}">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      Graph
+    </a>
+  </nav>
+
+  <div class="sb-plants" id="sb-plants-wrap">
+    <div class="sb-plants-title">Plant Status</div>
+    {% for p in plant_names %}
+    <div class="plant-pill">
+      <span class="plant-name">{{ p }}</span>
+      <span class="plant-val" id="lv-{{ p }}">—</span>
     </div>
-    <div class="nb-date">{{ today }}</div>
-    <div class="profile-menu">
-      <button type="button" class="profile-btn" id="profile-btn" aria-label="Profile menu" aria-expanded="false">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-7 8-7s8 3 8 7"/>
-        </svg>
+    {% endfor %}
+  </div>
+
+  <div class="sb-bottom">
+    <button class="sb-btn" id="theme-toggle" type="button">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+      </svg>
+      <span id="theme-label">Dark Mode</span>
+    </button>
+    <a href="{{ url_for('logout') }}" class="sb-btn danger">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+      </svg>
+      Logout
+    </a>
+  </div>
+</aside>
+
+<!-- ══ MAIN ═══════════════════════════════════════════════════════════════ -->
+<div class="main">
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <button class="hamburger" id="hamburger" aria-label="Menu">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
       </button>
-      <div class="profile-pop" id="profile-pop">
-        <button type="button" class="pm-item" id="theme-toggle">
-          <span class="pm-item-left">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 3v2m0 14v2M3 12h2m14 0h2M5.6 5.6l1.4 1.4m10 10 1.4 1.4M5.6 18.4 7 17m10-10 1.4-1.4"/><circle cx="12" cy="12" r="4"/>
-            </svg>
-            <span>Dark Mode</span>
-          </span>
-          <span class="pm-state" id="theme-state">Off</span>
-        </button>
-        <a href="{{ url_for('logout') }}" class="pm-item danger">
-          <span class="pm-item-left">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
-            </svg>
-            <span>Logout</span>
-          </span>
-        </a>
+      <span class="topbar-title">{% if page == "filter" %}Filtered Data{% elif page == "graph" %}Graphs{% else %}Dashboard{% endif %}</span>
+      <span class="topbar-sep"></span>
+      <span class="topbar-sub">Meter Production · All Plants</span>
+    </div>
+    <div class="topbar-right">
+      <span class="topbar-date">{{ today }}</span>
+      <button class="topbar-btn" id="refresh-btn" title="Refresh data" type="button">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- SHIFT BANNER -->
+  <div class="shift-banner">
+    <span class="shift-label">Shift</span>
+    <span class="shift-value" id="shift-name">Day Shift</span>
+    <span class="shift-sep"></span>
+    <span class="shift-label">Started</span>
+    <span class="shift-value">08:00</span>
+    <span class="shift-sep"></span>
+    <span class="shift-label">Elapsed</span>
+    <span class="shift-value" id="shift-elapsed">—</span>
+    <span class="shift-sep"></span>
+    <div class="shift-progress-wrap">
+      <div class="shift-progress-bar" id="shift-progress" style="width:0%"></div>
+    </div>
+    <span class="shift-label" id="shift-pct-lbl">0%</span>
+    <span class="shift-sep"></span>
+    <span class="shift-delta ahead" id="shift-live-label">
+      <span id="lv-ALL">—</span> m total
+    </span>
+  </div>
+
+  <!-- PAGE -->
+  <div class="page">
+
+    {% if page == "dashboard" %}
+    <!-- ── HERO SECTION ───────────────────────────────────────────────── -->
+    <div class="hero-section">
+      <!-- Shift Pulse Gauge -->
+      <div class="gauge-card">
+        <div class="gauge-svg-wrap">
+          <svg class="gauge-svg" viewBox="0 0 100 100">
+            <defs>
+              <linearGradient id="gaugeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#f59e0b"/>
+                <stop offset="100%" stop-color="#10b981"/>
+              </linearGradient>
+            </defs>
+            <circle class="gauge-track" cx="50" cy="50" r="45" stroke-dasharray="212 282" />
+            <circle class="gauge-fill" id="gauge-fill" cx="50" cy="50" r="45" stroke-dasharray="0 282"/>
+          </svg>
+          <div class="gauge-center">
+            <div class="gauge-num" id="gauge-num">—</div>
+            <div class="gauge-unit">meters</div>
+          </div>
+        </div>
+        <div class="gauge-label">All Plants · Today</div>
+        <div class="gauge-pct" id="gauge-pct">Shift Pulse</div>
+      </div>
+
+      <!-- Per-plant counters -->
+      <div class="counters-grid">
+        {% for p in plant_names %}
+        <div class="lc">
+          <div class="lc-tag">{{ p }}</div>
+          <div class="lc-num" id="lv-{{ p }}">—</div>
+          <div class="lc-trend">↑ today</div>
+        </div>
+        {% endfor %}
       </div>
     </div>
-  </div>
-</nav>
 
-<!-- ══ PAGE ════════════════════════════════════════════════════════ -->
-<div class="page">
-
-  <!-- ── LIVE COUNTERS ─────────────────────────────────────── -->
-  {% if page == "dashboard" %}
-  <div class="live-section">
-    <div class="sec-head">
-      <div class="sec-icon green">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-      </div>
-      <span class="sec-title">Live Production Data - Today</span>
-      <span class="sec-sub">Total meters produced today · <span id="live-asof">Last updated: �</span></span>
+    <!-- Update timestamp -->
+    <div class="sec-head" style="margin-bottom:20px">
+      <div class="sec-label">Live</div>
+      <span class="sec-sub" id="live-asof">Last updated: —</span>
       <div class="sec-line"></div>
     </div>
+    {% endif %}
 
-    <div class="live-strip">
-      <!-- Grand Total -->
-      <div class="lc grand">
-        <div class="lc-plant">All Plants Combined</div>
-        <div class="lc-num" id="lv-ALL">—</div>
+    <!-- ── BREAKDOWN TABLE ────────────────────────────────────────────── -->
+    <div>
+      <div class="sec-head">
+        <div class="sec-label">{% if page == "filter" %}Filter{% else %}Breakdown{% endif %}</div>
+        <span class="sec-title">{% if page == "filter" %}Filtered Data Table{% else %}Production Breakdown{% endif %}</span>
+        <span class="sec-sub" id="breakdown-sub">{% if page == "filter" %}Refine by plant, slot, project and line{% else %}Line by line · Today vs current slot{% endif %}</span>
+        <div class="sec-line"></div>
       </div>
-      <!-- Per-plant -->
-      {% for p in plant_names %}
-      <div class="lc">
-        <div class="lc-plant">{{ p }}</div>
-        <div class="lc-num" id="lv-{{ p }}">—</div>
+
+      <form method="get" id="main-form">
+        <input type="hidden" name="date"     value="{{ selecteddate }}">
+        <input type="hidden" name="timefrom" id="hid-from" value="{{ timefrom }}">
+        <input type="hidden" name="timeto"   id="hid-to"   value="{{ timeto }}">
+
+        <div class="filter-toolbar">
+          <span class="filter-label">Filter by</span>
+
+          <div class="fg">
+            <span class="fg-lbl">Plant</span>
+            <select name="plant" onchange="submitForm()">
+              <option value="ALL" {% if plant == "ALL" %}selected{% endif %}>All Plants</option>
+              {% for p in plant_names %}
+              <option value="{{ p }}" {% if p == plant %}selected{% endif %}>{{ p }}</option>
+              {% endfor %}
+            </select>
+            <span class="fg-chev"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg></span>
+          </div>
+
+          {% set slot_start = (timefrom.split(':')[0] | int) if timefrom else 0 %}
+          <div class="fg">
+            <span class="fg-lbl">Slot</span>
+            <select id="sel-slot" onchange="submitSlotForm()" style="min-width:158px">
+              {% for h in range(8, 24) %}
+              {% set endh = (h + 1) % 24 %}
+              {% set h12 = 12 if (h % 12) == 0 else (h % 12) %}
+              {% set endh12 = 12 if (endh % 12) == 0 else (endh % 12) %}
+              <option value="{{ h }}" {% if slot_start == h %}selected{% endif %}>
+                {{ '%02d:00 %s' % (h12, 'am' if h < 12 else 'pm') }} – {{ '%02d:00 %s' % (endh12, 'am' if endh < 12 else 'pm') }}
+              </option>
+              {% endfor %}
+              {% for h in range(0, 8) %}
+              {% set endh = (h + 1) % 24 %}
+              {% set h12 = 12 if (h % 12) == 0 else (h % 12) %}
+              {% set endh12 = 12 if (endh % 12) == 0 else (endh % 12) %}
+              <option value="{{ h }}" {% if slot_start == h %}selected{% endif %}>
+                {{ '%02d:00 %s' % (h12, 'am' if h < 12 else 'pm') }} – {{ '%02d:00 %s' % (endh12, 'am' if endh < 12 else 'pm') }}
+              </option>
+              {% endfor %}
+            </select>
+            <span class="fg-chev"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg></span>
+          </div>
+
+          {% if page == "filter" %}
+          <div class="fg">
+            <span class="fg-lbl">Project</span>
+            <select id="sel-project" name="project" onchange="submitForm()" style="min-width:140px">
+              <option value="ALL" {% if project == "ALL" %}selected{% endif %}>All Projects</option>
+              {% if project and project != "ALL" %}<option value="{{ project }}" selected>{{ project }}</option>{% endif %}
+            </select>
+            <span class="fg-chev"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg></span>
+          </div>
+          <div class="fg">
+            <span class="fg-lbl">Line</span>
+            <select id="sel-line" name="line" onchange="submitForm()" style="min-width:120px">
+              <option value="ALL" {% if line == "ALL" %}selected{% endif %}>All Lines</option>
+              {% if line and line != "ALL" %}<option value="{{ line }}" selected>{{ line }}</option>{% endif %}
+            </select>
+            <span class="fg-chev"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg></span>
+          </div>
+          {% endif %}
+
+          <div class="filter-right">
+            <div class="rspin" id="ref-spin"></div>
+          </div>
+        </div>
+      </form>
+
+      <!-- Stats -->
+      <div class="stats-row">
+        <div class="stat-chip">Lines <strong id="stat-lines">{{ rows|length }}</strong></div>
+        <div class="stat-chip green">Today (8 AM+) <strong id="stat-today">{{ rows|sum(attribute='TodayQty') if rows and rows[0] is defined and 'TodayQty' in rows[0] else rows|sum(attribute='ProdQty') }}</strong> m</div>
+        <div class="stat-chip amber">Slot Total <strong id="stat-hour">—</strong> m</div>
+        <div class="stat-chip" id="sort-chip" style="display:none">Sorted <strong id="sort-label"></strong></div>
       </div>
-      {% endfor %}
-    </div>
-  </div>
 
-  {% endif %}
-
-  <!-- ── BREAKDOWN TABLE ───────────────────────────────────── -->
-  <div class="breakdown-section">
-    <div class="sec-head">
-      <div class="sec-icon blue">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
-      </div>
-      <span class="sec-title">{% if page == "filter" %}Filtered Data Table{% else %}Production Breakdown - Line by Line{% endif %}</span>
-      <span class="sec-sub" id="breakdown-sub">{% if page == "filter" %}All Plants - refine by plant, slot, project and line{% else %}All Plants - Today vs Current Slot{% endif %}</span>
-      <div class="sec-line"></div>
-    </div>
-
-    <form method="get" id="main-form">
-      <input type="hidden" name="date"     value="{{ selecteddate }}">
-      <input type="hidden" name="timefrom" id="hid-from" value="{{ timefrom }}">
-      <input type="hidden" name="timeto"   id="hid-to"   value="{{ timeto }}">
-
-      <div class="filter-body" style="padding: 2px 0 10px;">
-        <!-- Plant -->
-        <div class="fg">
-          <span class="fg-lbl">Plant</span>
-          <select name="plant" onchange="submitForm()">
-            <option value="ALL" {% if plant == "ALL" %}selected{% endif %}>All Plants</option>
-            {% for p in plant_names %}
-            <option value="{{ p }}" {% if p == plant %}selected{% endif %}>{{ p }}</option>
-            {% endfor %}
-          </select>
-          <span class="fg-chevron"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg></span>
+      <!-- Table -->
+      <div class="tbl-wrap">
+        <div class="tbl-colgroup-header">
+          <div class="tcgh identity">
+            <span class="tcgh-dot"></span> Identity
+          </div>
+          <div class="tcgh today">
+            <span class="tcgh-dot"></span> Today Full Shift
+          </div>
+          <div class="tcgh thishour">
+            <span class="tcgh-dot"></span> <span id="th-slot-lbl">{{ timefrom }} – {{ timeto }}</span>
+          </div>
         </div>
 
-        {% set slot_start = (timefrom.split(':')[0] | int) if timefrom else 0 %}
-        <div class="fg">
-          <span class="fg-lbl">Slot</span>
-          <select id="sel-slot" onchange="submitSlotForm()" style="min-width:172px">
-            {% for h in range(8, 24) %}
-            {% set endh = (h + 1) % 24 %}
-            {% set h12 = 12 if (h % 12) == 0 else (h % 12) %}
-            {% set endh12 = 12 if (endh % 12) == 0 else (endh % 12) %}
-            <option value="{{ h }}" {% if slot_start == h %}selected{% endif %}>
-              {{ '%02d:00 %s' % (h12, 'am' if h < 12 else 'pm') }}
-              -
-              {{ '%02d:00 %s' % (endh12, 'am' if endh < 12 else 'pm') }}
-            </option>
-            {% endfor %}
-            {% for h in range(0, 8) %}
-            {% set endh = (h + 1) % 24 %}
-            {% set h12 = 12 if (h % 12) == 0 else (h % 12) %}
-            {% set endh12 = 12 if (endh % 12) == 0 else (endh % 12) %}
-            <option value="{{ h }}" {% if slot_start == h %}selected{% endif %}>
-              {{ '%02d:00 %s' % (h12, 'am' if h < 12 else 'pm') }}
-              -
-              {{ '%02d:00 %s' % (endh12, 'am' if endh < 12 else 'pm') }}
-            </option>
-            {% endfor %}
-          </select>
-          <span class="fg-chevron"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg></span>
+        <div class="tbl-scroll">
+          <table id="prod-table">
+            <thead>
+            <tr id="thead-row">
+              <th data-col="0" data-type="str" class="col-identity">
+                <span class="th-inner">Project <span class="sort-arr"><span class="arr-u"></span><span class="arr-d"></span></span></span>
+              </th>
+              <th data-col="1" data-type="str" class="col-identity">
+                <span class="th-inner">Line <span class="sort-arr"><span class="arr-u"></span><span class="arr-d"></span></span></span>
+              </th>
+              <th data-col="2" data-type="str" class="col-identity col-identity-last" id="th-plant" {% if plant != "ALL" %}style="display:none"{% endif %}>
+                <span class="th-inner">Plant <span class="sort-arr"><span class="arr-u"></span><span class="arr-d"></span></span></span>
+              </th>
+              <th data-col="3" data-type="num" class="col-today">
+                <span class="th-inner right">8 AM+ <span class="sort-arr"><span class="arr-u"></span><span class="arr-d"></span></span></span>
+              </th>
+              <th data-col="4" data-type="num" class="col-thishour">
+                <span class="th-inner right"><span id="th-slot-lbl2">{{ timefrom }} – {{ timeto }}</span> <span class="sort-arr"><span class="arr-u"></span><span class="arr-d"></span></span></span>
+              </th>
+            </tr>
+            </thead>
+            <tbody id="table-body">
+              <tr><td colspan="5"><div class="empty-state"><div class="icon">⏳</div><p>Loading production data…</p></div></td></tr>
+            </tbody>
+          </table>
         </div>
 
-        {% if page == "filter" %}
-        <div class="fg">
-          <span class="fg-lbl">Project</span>
-          <select id="sel-project" name="project" onchange="submitForm()" style="min-width:150px">
-            <option value="ALL" {% if project == "ALL" %}selected{% endif %}>All Projects</option>
-            {% if project and project != "ALL" %}<option value="{{ project }}" selected>{{ project }}</option>{% endif %}
-          </select>
-          <span class="fg-chevron"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg></span>
+        <div class="tbl-footer">
+          <span>Click column header to sort · click again to reverse</span>
+          <div class="tbl-footer-right">
+            <span class="tbl-asof" id="live-asof-table">—</span>
+          </div>
         </div>
-        <div class="fg">
-          <span class="fg-lbl">Line</span>
-          <select id="sel-line" name="line" onchange="submitForm()" style="min-width:130px">
-            <option value="ALL" {% if line == "ALL" %}selected{% endif %}>All Lines</option>
-            {% if line and line != "ALL" %}<option value="{{ line }}" selected>{{ line }}</option>{% endif %}
-          </select>
-          <span class="fg-chevron"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg></span>
-        </div>
-        {% endif %}
-
-        <div class="rspin" id="ref-spin"></div>
-      </div>
-    </form>
-
-    <!-- Stats bar -->
-    <div class="stats-bar">
-      <div class="sc">Lines <strong id="stat-lines">{{ rows|length }}</strong></div>
-      <div class="sc blue">Today Total (8 AM+) <strong id="stat-today">{{ rows|sum(attribute='TodayQty') if rows and rows[0] is defined and 'TodayQty' in rows[0] else rows|sum(attribute='ProdQty') }}</strong> m</div>
-      <div class="sc amber">Slot Total <strong id="stat-hour">—</strong> m</div>
-      <div class="sc" id="sort-chip" style="display:none">Sorted <strong id="sort-label"></strong></div>
-    </div>
-
-    <!-- Table -->
-    <div class="tbl-wrap">
-      <div class="tbl-scroll">
-        <table id="prod-table">
-          <thead>
-          <tr id="thead-row">
-            <th data-col="0" data-type="str" class="col-identity">
-              <span class="th-inner">Project <span class="sort-arr"><span class="arr-u"></span><span class="arr-d"></span></span></span>
-            </th>
-            <th data-col="1" data-type="str" class="col-identity">
-              <span class="th-inner">Line <span class="sort-arr"><span class="arr-u"></span><span class="arr-d"></span></span></span>
-            </th>
-            <th data-col="2" data-type="str" class="col-identity col-identity-last" id="th-plant" {% if plant != "ALL" %}style="display:none"{% endif %}>
-              <span class="th-inner">Plant <span class="sort-arr"><span class="arr-u"></span><span class="arr-d"></span></span></span>
-            </th>
-            <th data-col="3" data-type="num" class="col-today">
-              <span class="th-inner right">TODAY 8 AM+ <span class="sort-arr"><span class="arr-u"></span><span class="arr-d"></span></span></span>
-            </th>
-            <th data-col="4" data-type="num" class="col-thishour">
-              <span class="th-inner right"><span id="th-slot-lbl">{{ timefrom }} - {{ timeto }}</span> <span class="sort-arr"><span class="arr-u"></span><span class="arr-d"></span></span></span>
-            </th>
-          </tr>
-          </thead>
-          <tbody id="table-body">
-            <tr><td colspan="5"><div class="empty-state"><div class="icon">⏳</div><p>Loading production data…</p></div></td></tr>
-          </tbody>
-        </table>
-      </div>
-
-      <div class="tbl-footer">
-        <span>Click any column header to sort · click again to reverse direction</span>
-        <span>MTR Meter Production</span>
       </div>
     </div>
-  </div>
 
-</div><!-- /page -->
+  </div><!-- /page -->
+</div><!-- /main -->
 
-<!-- ══ SCRIPTS ═══════════════════════════════════════════════════════ -->
+<!-- ══ SCRIPTS ═══════════════════════════════════════════════════════════ -->
 <script>
-// ── Helpers ─────────────────────────────────────────────────────────
-const $  = id => document.getElementById(id);
+const $ = id => document.getElementById(id);
 const AUTO_REFRESH_MS = 30000;
 const fmt = n => (typeof n === "number" ? n : 0).toLocaleString("en-IN");
 
@@ -835,7 +1339,49 @@ function bump(el) {
   el.classList.remove("bumped"); void el.offsetWidth; el.classList.add("bumped");
 }
 
-// ── Current hour slot ────────────────────────────────────────────────
+// ── Clock & Shift Progress ────────────────────────────────────────────
+function updateClock() {
+  const now = new Date();
+  const h = now.getHours(), m = now.getMinutes(), s = now.getSeconds();
+  const pad = n => String(n).padStart(2, "0");
+  if ($("sb-time")) $("sb-time").textContent = `${pad(h)}:${pad(m)}:${pad(s)}`;
+
+  // Shift 08:00–23:00
+  const shiftStart = 8, shiftEnd = 23;
+  const shiftTotal = (shiftEnd - shiftStart) * 60;
+  const elapsed = Math.max(0, (h - shiftStart) * 60 + m);
+  const pct = Math.min(100, Math.round((elapsed / shiftTotal) * 100));
+
+  if ($("shift-progress")) $("shift-progress").style.width = pct + "%";
+  if ($("shift-pct-lbl")) $("shift-pct-lbl").textContent = pct + "%";
+  if ($("shift-elapsed")) {
+    const eh = Math.floor(elapsed / 60), em = elapsed % 60;
+    $("shift-elapsed").textContent = `${eh}h ${pad(em)}m`;
+  }
+
+  const shiftName = h >= 8 && h < 20 ? "Day Shift" : "Night Shift";
+  if ($("shift-name")) $("shift-name").textContent = shiftName;
+}
+updateClock();
+setInterval(updateClock, 1000);
+
+// ── Gauge ─────────────────────────────────────────────────────────────
+const GAUGE_CIRCUMFERENCE = 282;
+const GAUGE_ARC = 212; // 270deg arc out of 360
+
+function setGauge(value, target) {
+  const fill = $("gauge-fill");
+  const numEl = $("gauge-num");
+  const pctEl = $("gauge-pct");
+  if (!fill) return;
+  const ratio = target > 0 ? Math.min(1, value / target) : 0;
+  const dashOffset = GAUGE_CIRCUMFERENCE - (ratio * GAUGE_ARC);
+  fill.style.strokeDasharray = `${ratio * GAUGE_ARC} ${GAUGE_CIRCUMFERENCE}`;
+  if (numEl) numEl.textContent = fmt(value);
+  if (pctEl) pctEl.textContent = target > 0 ? Math.round(ratio * 100) + "% of target" : "Shift Pulse";
+}
+
+// ── Current slot ──────────────────────────────────────────────────────
 function currentSlot() {
   const h = new Date().getHours();
   const from = String(h).padStart(2,"0") + ":00";
@@ -846,61 +1392,47 @@ function currentSlot() {
 function fmtHour(h) {
   const h12 = (h % 12) === 0 ? 12 : (h % 12);
   const suffix = h < 12 ? "am" : "pm";
-  return String(h12).padStart(2, "0") + ":00 " + suffix;
+  return String(h12).padStart(2,"0") + ":00 " + suffix;
+}
+
+function fmtHourCompact(h) {
+  const h12 = (h % 12) === 0 ? 12 : (h % 12);
+  return `${h12} ${h < 12 ? "AM" : "PM"}`;
+}
+
+function toSlotLabel(from, to) {
+  const fh = parseInt(from, 10), th = parseInt(to, 10);
+  if (isNaN(fh) || isNaN(th)) return `${from} – ${to}`;
+  return `${fmtHour(fh)} – ${fmtHour(th)}`;
+}
+function toSlotHeaderLabel(from, to) {
+  const fh = parseInt(from, 10), th = parseInt(to, 10);
+  if (isNaN(fh) || isNaN(th)) return `${from} – ${to}`;
+  return `${fmtHourCompact(fh)} – ${fmtHourCompact(th)}`;
 }
 
 function updateSlotBadge() {
-  const curSlotLbl = $("cur-slot-lbl");
-  if (!curSlotLbl) return;
   const { h } = currentSlot();
-  curSlotLbl.textContent = fmtHour(h) + " - " + fmtHour((h+1)%24);
+  const lbl = fmtHour(h) + " – " + fmtHour((h+1)%24);
 }
 updateSlotBadge();
 setInterval(updateSlotBadge, 60000);
 
-// ── Hour select controls ──────────────────────────────────────────────
+// ── Slot → hidden inputs ──────────────────────────────────────────────
 const selSlot  = $("sel-slot");
 const hidFrom  = $("hid-from");
 const hidTo    = $("hid-to");
 const mainForm = $("main-form");
 
-function toSlotLabel(from, to) {
-  const fromHour = parseInt(from, 10);
-  const toHour = parseInt(to, 10);
-  if (Number.isNaN(fromHour) || Number.isNaN(toHour)) return `${from} - ${to}`;
-  return `${fmtHour(fromHour)} - ${fmtHour(toHour)}`;
-}
-
-function fmtHourCompact(h) {
-  const h12 = (h % 12) === 0 ? 12 : (h % 12);
-  const suffix = h < 12 ? "AM" : "PM";
-  return `${h12} ${suffix}`;
-}
-
-function toSlotHeaderLabel(from, to) {
-  const fromHour = parseInt(from, 10);
-  const toHour = parseInt(to, 10);
-  if (Number.isNaN(fromHour) || Number.isNaN(toHour)) return `${from} - ${to}`;
-  return `${fmtHourCompact(fromHour)} - ${fmtHourCompact(toHour)}`;
-}
-
 function syncSlotToHidden() {
   if (!selSlot || !hidFrom || !hidTo) return;
   const h = parseInt(selSlot.value, 10);
-  if (Number.isNaN(h)) return;
-  hidFrom.value = String(h).padStart(2, "0") + ":00";
-  hidTo.value = String((h + 1) % 24).padStart(2, "0") + ":00";
+  if (isNaN(h)) return;
+  hidFrom.value = String(h).padStart(2,"0") + ":00";
+  hidTo.value   = String((h+1)%24).padStart(2,"0") + ":00";
 }
-
-function submitSlotForm() {
-  syncSlotToHidden();
-  submitForm();
-}
-
-function submitForm() {
-  showLoading();
-  mainForm.submit();
-}
+function submitSlotForm() { syncSlotToHidden(); submitForm(); }
+function submitForm() { showLoading(); mainForm.submit(); }
 syncSlotToHidden();
 
 // ── Progress bar + overlay ────────────────────────────────────────────
@@ -917,28 +1449,18 @@ function startBar() {
   bt = setInterval(() => { bw += bw<30?5:bw<65?2:0.3; bar.style.width=bw+"%"; if(bw>=85) clearInterval(bt); }, 80);
 }
 function showLoading() { overlay.classList.add("active"); startBar(); }
-
 function hideLoading() {
   clearInterval(bt);
-  bar.style.transition="width .15s";
-  bar.style.width="100%";
+  bar.style.transition="width .15s"; bar.style.width="100%";
   setTimeout(() => {
-    bar.style.transition="opacity .3s";
-    bar.style.opacity="0";
+    bar.style.transition="opacity .3s"; bar.style.opacity="0";
     setTimeout(() => {
-      bar.style.display="none";
-      bar.style.opacity="";
-      overlay.classList.remove("active");
+      bar.style.display="none"; bar.style.opacity=""; overlay.classList.remove("active");
     }, 300);
   }, 350);
 }
-
 if (isFilterPage) startBar();
-
-window.addEventListener("pageshow", () => {
-  if (isFilterPage) return;
-  hideLoading();
-});
+window.addEventListener("pageshow", () => { if (!isFilterPage) hideLoading(); });
 
 // ── Sort ──────────────────────────────────────────────────────────────
 let sortCol = ("{{ page }}" === "dashboard" ? 1 : -1), sortDir = 1;
@@ -963,7 +1485,7 @@ function bindSort() {
       headers.forEach(h => h.classList.remove("sort-asc","sort-desc"));
       th.classList.add(sortDir===1?"sort-asc":"sort-desc");
       $("sort-label").textContent = colNames[i]+(sortDir===1?" ↑":" ↓");
-      $("sort-chip").style.display = "inline-flex";
+      $("sort-chip").style.display="inline-flex";
     };
   });
 }
@@ -982,25 +1504,36 @@ async function fetchLive() {
     const d = await r.json();
     const pt = d.plant_totals || {};
 
-    // ALL
-    const totEl = $("lv-ALL");
-    if (totEl) {
-      const nv = d.total || 0;
-      const ns = fmt(nv);
-      if (totEl.textContent !== ns) { totEl.textContent = ns; bump(totEl); }
+    // ALL — sidebar shift-delta + gauge
+    const nv = d.total || 0;
+    const ns = fmt(nv);
+
+    // Update shift delta label in banner
+    const shiftLiveEl = $("lv-ALL");
+    if (shiftLiveEl && shiftLiveEl.textContent !== ns) {
+      shiftLiveEl.textContent = ns;
+      bump(shiftLiveEl);
     }
 
-    // per plant
+    // Update gauge (use 50000 as a placeholder daily target — adjust as needed)
+    setGauge(nv, 50000);
+
+    // Also update gauge-num directly
+    const gn = $("gauge-num");
+    if (gn) { gn.textContent = ns; }
+
+    // per plant (sidebar + dashboard cards)
     Object.entries(pt).forEach(([k,v]) => {
-      const el  = $("lv-" + k);
-      if (!el) return;
-      const ns = fmt(v);
-      if (el.textContent !== ns) { el.textContent = ns; bump(el); }
+      const els = document.querySelectorAll(`[id="lv-${k}"]`);
+      els.forEach(el => {
+        const newStr = fmt(v);
+        if (el.textContent !== newStr) { el.textContent = newStr; bump(el); }
+      });
     });
 
-    if ($("live-asof")) {
-      $("live-asof").textContent = "Last updated: " + (d.as_of||"").replace("T"," ");
-    }
+    const asof = (d.as_of||"").replace("T"," ");
+    if ($("live-asof"))       $("live-asof").textContent = "Last updated: " + asof;
+    if ($("live-asof-table")) $("live-asof-table").textContent = "Updated: " + asof;
   } catch(e) { console.warn("live error:", e); }
 }
 
@@ -1009,53 +1542,49 @@ async function fetchTable() {
   const spin = $("ref-spin");
   if (spin && tableSpinFirstLoad) spin.classList.add("on");
   try {
-    const params = new URLSearchParams(window.location.search);
-    const plant   = params.get("plant") || "{{ plant }}" || "GPIL-2";
-    const from    = params.get("timefrom") || currentSlot().from;
-    const to      = params.get("timeto")   || currentSlot().to;
+    const params  = new URLSearchParams(window.location.search);
+    const plant   = params.get("plant")   || "{{ plant }}" || "GPIL-2";
+    const from    = params.get("timefrom")|| currentSlot().from;
+    const to      = params.get("timeto")  || currentSlot().to;
     const project = params.get("project") || "{{ project|default('ALL') }}";
-    const line    = params.get("line") || "{{ line|default('ALL') }}";
+    const line    = params.get("line")    || "{{ line|default('ALL') }}";
 
-    // Fetch both: today-full and selected-slot
     const [rFull, rSlot] = await Promise.all([
       fetch(`/api/breakdown?plant=${encodeURIComponent(plant)}&timefrom=08%3A00&timeto=23%3A59`, {cache:"no-store"}),
       fetch(`/api/breakdown?plant=${encodeURIComponent(plant)}&timefrom=${encodeURIComponent(from)}&timeto=${encodeURIComponent(to)}`, {cache:"no-store"}),
     ]);
-
     if (!rFull.ok || !rSlot.ok) return;
+
     const dFull = await rFull.json();
     const dSlot = await rSlot.json();
 
-    // Build maps: "ProjCode|Line|Plant" => qty
     const makeKey = r => `${r.ProjCode}||${r.Line}||${r.Plant||""}`;
     const fullMap = {}, slotMap = {};
-    (dFull.rows || []).forEach(r => { const k=makeKey(r); fullMap[k]=(fullMap[k]||0)+r.ProdQty; });
-    (dSlot.rows || []).forEach(r => { const k=makeKey(r); slotMap[k]=(slotMap[k]||0)+r.ProdQty; });
+    (dFull.rows||[]).forEach(r => { const k=makeKey(r); fullMap[k]=(fullMap[k]||0)+r.ProdQty; });
+    (dSlot.rows||[]).forEach(r => { const k=makeKey(r); slotMap[k]=(slotMap[k]||0)+r.ProdQty; });
 
-    // Merge all keys
     const allKeys = new Set([...Object.keys(fullMap), ...Object.keys(slotMap)]);
     const rows = [];
     allKeys.forEach(k => {
-      const [proj, line, pl] = k.split("||");
-      rows.push({ proj, line, plant: pl, today: fullMap[k]||0, hour: slotMap[k]||0 });
+      const [proj, ln, pl] = k.split("||");
+      rows.push({ proj, line: ln, plant: pl, today: fullMap[k]||0, hour: slotMap[k]||0 });
     });
     rows.sort((a,b) => (a.line > b.line ? 1 : a.line < b.line ? -1 : a.proj > b.proj ? 1 : -1));
 
+    // Populate dropdowns
     const selProject = $("sel-project");
-    const selLine = $("sel-line");
+    const selLine    = $("sel-line");
     if (selProject) {
       const projSet = [...new Set(rows.map(r => r.proj))].sort((a,b) => a.localeCompare(b));
       selProject.innerHTML = ['<option value="ALL">All Projects</option>']
-        .concat(projSet.map(p => `<option value="${p}">${p}</option>`))
-        .join("");
+        .concat(projSet.map(p => `<option value="${p}">${p}</option>`)).join("");
       selProject.value = projSet.includes(project) ? project : "ALL";
     }
     if (selLine) {
       const pool = project === "ALL" ? rows : rows.filter(r => r.proj === project);
       const lineSet = [...new Set(pool.map(r => r.line))].sort((a,b) => a.localeCompare(b));
       selLine.innerHTML = ['<option value="ALL">All Lines</option>']
-        .concat(lineSet.map(l => `<option value="${l}">${l}</option>`))
-        .join("");
+        .concat(lineSet.map(l => `<option value="${l}">${l}</option>`)).join("");
       selLine.value = lineSet.includes(line) ? line : "ALL";
     }
 
@@ -1070,23 +1599,20 @@ async function fetchTable() {
     const totalToday = rowsFiltered.reduce((s,r) => s+r.today, 0);
     const totalHour  = rowsFiltered.reduce((s,r) => s+r.hour,  0);
 
-    // Update stats
     $("stat-lines").textContent = rowsFiltered.length;
     $("stat-today").textContent = fmt(totalToday);
     $("stat-hour").textContent  = fmt(totalHour);
 
-    // Update slot header
-    const slotLbl = toSlotLabel(from, to);
-    const slotHeadLbl = toSlotHeaderLabel(from, to);
-    if ($("th-slot-lbl")) $("th-slot-lbl").textContent = slotHeadLbl;
-    if ($("fi-plant")) $("fi-plant").textContent = plant;
-    if ($("fi-time"))  $("fi-time").textContent  = slotLbl;
+    const slotLbl       = toSlotLabel(from, to);
+    const slotHeaderLbl = toSlotHeaderLabel(from, to);
+    if ($("th-slot-lbl"))  $("th-slot-lbl").textContent  = slotHeaderLbl;
+    if ($("th-slot-lbl2")) $("th-slot-lbl2").textContent = slotHeaderLbl;
+    if ($("fi-plant"))     $("fi-plant").textContent = plant;
+    if ($("fi-time"))      $("fi-time").textContent  = slotLbl;
 
-    // Show/hide plant column
     const thPlant = $("th-plant");
     if (thPlant) thPlant.style.display = showPlant ? "" : "none";
 
-    // Render tbody
     const tbody = $("table-body");
     if (!rowsFiltered.length) {
       const cols = showPlant ? 5 : 4;
@@ -1096,44 +1622,48 @@ async function fetchTable() {
         const pToday = Math.round((r.today/maxToday)*100);
         const pHour  = Math.round((r.hour/maxHour)*100);
         const zero   = r.today===0 && r.hour===0 ? " zero-row" : "";
+        const statusCls = r.today > 0 ? "active" : "idle";
         return `<tr class="${zero}">
           <td class="col-proj">${r.proj}</td>
-          <td class="col-line">${r.line}</td>
+          <td class="col-line"><span class="row-status"><span class="status-dot ${statusCls}"></span>${r.line}</span></td>
           ${showPlant ? `<td class="col-plant col-identity-last">${r.plant}</td>` : `<td class="col-identity-last" style="display:none"></td>`}
-          <td class="col-today-qty"><span class="qty-num">${fmt(r.today)}</span><div class="qty-bar" style="width:${pToday}%"></div></td>
-          <td class="col-hour-qty"><span class="qty-num">${fmt(r.hour)}</span><div class="qty-bar" style="width:${pHour}%"></div></td>
+          <td class="col-today-qty">
+            <div class="heat-bg" style="opacity:${(pToday/100)*0.07}"></div>
+            <div class="qty-cell">
+              <span class="qty-num">${fmt(r.today)}</span>
+              <div class="qty-bar-track"><div class="qty-bar-fill" style="width:${pToday}%"></div></div>
+            </div>
+          </td>
+          <td class="col-hour-qty">
+            <div class="heat-bg" style="opacity:${(pHour/100)*0.07}"></div>
+            <div class="qty-cell">
+              <span class="qty-num">${fmt(r.hour)}</span>
+              <div class="qty-bar-track"><div class="qty-bar-fill" style="width:${pHour}%"></div></div>
+            </div>
+          </td>
         </tr>`;
       }).join("");
     }
 
-    // Update breakdown sub-heading
     if ($("breakdown-sub")) {
       $("breakdown-sub").textContent = `${plant} · Today vs ${slotLbl}`;
     }
 
     bindSort();
     if (sortCol >= 0) {
-      const targetCol = sortCol;
-      const targetDir = sortDir;
+      const tc = sortCol, td2 = sortDir;
       const headers = Array.from($("prod-table").querySelectorAll("thead th"));
-      const th = headers[targetCol];
+      const th = headers[tc];
       if (th && typeof th.onclick === "function") {
-        sortCol = -1;
-        sortDir = 1;
-        th.onclick(); // apply asc for the same column
-        if (targetDir === -1) th.onclick(); // then flip to desc if needed
+        sortCol = -1; sortDir = 1;
+        th.onclick();
+        if (td2 === -1) th.onclick();
       }
     }
   } catch(e) { console.warn("table error:", e); }
   finally {
-    if (spin && tableSpinFirstLoad) {
-      spin.classList.remove("on");
-      tableSpinFirstLoad = false;
-    }
-    if (filterFirstLoadPending) {
-      hideLoading();
-      filterFirstLoadPending = false;
-    }
+    if (spin && tableSpinFirstLoad) { spin.classList.remove("on"); tableSpinFirstLoad = false; }
+    if (filterFirstLoadPending) { hideLoading(); filterFirstLoadPending = false; }
   }
 }
 
@@ -1142,46 +1672,45 @@ bindSort();
 fetchLive();
 fetchTable();
 setInterval(() => { fetchLive(); fetchTable(); }, AUTO_REFRESH_MS);
+
+// Refresh button
+const refreshBtn = $("refresh-btn");
+if (refreshBtn) {
+  refreshBtn.addEventListener("click", () => {
+    refreshBtn.style.animation = "spin .5s linear";
+    setTimeout(() => refreshBtn.style.animation = "", 500);
+    fetchLive(); fetchTable();
+  });
+}
 </script>
+
+<!-- Theme & Sidebar JS -->
 <script>
 (() => {
   const root = document.documentElement;
-  const key = "pd_theme";
-  const btn = document.getElementById("profile-btn");
-  const pop = document.getElementById("profile-pop");
-  const toggle = document.getElementById("theme-toggle");
-  const state = document.getElementById("theme-state");
+  const KEY  = "pd_theme";
   const getTheme = () => root.getAttribute("data-theme") === "dark" ? "dark" : "light";
-  const setTheme = (t) => {
+  const setTheme = t => {
     root.setAttribute("data-theme", t);
-    localStorage.setItem(key, t);
-    if (state) state.textContent = t === "dark" ? "On" : "Off";
+    localStorage.setItem(KEY, t);
+    const lbl = document.getElementById("theme-label");
+    if (lbl) lbl.textContent = t === "dark" ? "Light Mode" : "Dark Mode";
   };
   setTheme(getTheme());
-  if (btn && pop) {
-    btn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      const open = pop.classList.toggle("open");
-      btn.setAttribute("aria-expanded", open ? "true" : "false");
+
+  const toggle = document.getElementById("theme-toggle");
+  if (toggle) toggle.addEventListener("click", () => setTheme(getTheme() === "dark" ? "light" : "dark"));
+
+  // Sidebar hamburger
+  const hamburger = document.getElementById("hamburger");
+  const sidebar   = document.getElementById("sidebar");
+  if (hamburger && sidebar) {
+    hamburger.addEventListener("click", () => sidebar.classList.toggle("open"));
+    document.addEventListener("click", e => {
+      if (!sidebar.contains(e.target) && e.target !== hamburger) sidebar.classList.remove("open");
     });
-    document.addEventListener("click", (e) => {
-      if (!pop.contains(e.target) && e.target !== btn) {
-        pop.classList.remove("open");
-        btn.setAttribute("aria-expanded", "false");
-      }
-    });
-  }
-  if (toggle) {
-    toggle.addEventListener("click", () => setTheme(getTheme() === "dark" ? "light" : "dark"));
   }
 })();
 </script>
 </body>
 </html>
-
-
-
-
-
-
-

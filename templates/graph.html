@@ -290,7 +290,7 @@
     <div class="fg">
       <span class="fg-lbl">Plant</span>
       <select id="plant" name="plant" onchange="this.form.submit()">
-        {# <option value="ALL" {% if plant == "ALL" %}selected{% endif %}>All Plants</option> #}
+        <option value="ALL" {% if plant == "ALL" %}selected{% endif %}>All Plant</option>
         {% for p in plant_names %}
         <option value="{{ p }}" {% if p == plant or (not plant and p == "GPIL-2") %}selected{% endif %}>{{ p }}</option>
         {% endfor %}
@@ -335,15 +335,15 @@
   </form>
 
   <div class="panel-grid">
-    <div class="panel">
+    <div class="panel" id="line-today-panel">
       <h3>Line-wise Production (Today 8 AM+)</h3>
       <div class="chart-wrap"><canvas id="lineTodayChart"></canvas></div>
     </div>
-    <div class="panel">
+    <div class="panel" id="line-slot-panel">
       <h3 id="line-slot-heading">Line-wise Production (Current Hour)</h3>
       <div class="chart-wrap"><canvas id="lineChart"></canvas></div>
     </div>
-    <div class="panel wide">
+    <div class="panel wide" id="plant-total-panel">
       <h3>Plant-wise Total Production (8 AM+)</h3>
       <div class="plant-viz-grid">
         <div class="mini-panel">
@@ -373,6 +373,9 @@ let lineChart;
 let lineTodayChart;
 let firstLoad = true;
 const plantSideListEl = document.getElementById("plantSideList");
+const lineTodayPanelEl = document.getElementById("line-today-panel");
+const lineSlotPanelEl = document.getElementById("line-slot-panel");
+const plantTotalPanelEl = document.getElementById("plant-total-panel");
 
 const overlay = document.getElementById("loading-overlay");
 const bar = document.getElementById("progress-bar");
@@ -603,6 +606,13 @@ function renderPlantSideList(entries, total, colors) {
   }).join("");
 }
 
+function toggleGraphPanels(selectedPlant) {
+  const isAllPlant = selectedPlant === "ALL";
+  if (lineTodayPanelEl) lineTodayPanelEl.style.display = isAllPlant ? "none" : "";
+  if (lineSlotPanelEl) lineSlotPanelEl.style.display = isAllPlant ? "none" : "";
+  if (plantTotalPanelEl) plantTotalPanelEl.style.display = isAllPlant ? "" : "none";
+}
+
 function updateDynamicFilters(rows) {
   const selectedProject = qs.get("project") || "ALL";
   const selectedLine = qs.get("line") || "ALL";
@@ -627,12 +637,14 @@ function updateDynamicFilters(rows) {
 async function refreshCharts() {
   try {
     const plant = qs.get("plant") || "{{ plant }}";
+    const isAllPlant = plant === "ALL";
     const from = qs.get("timefrom") || "{{ timefrom }}";
     const to = qs.get("timeto") || "{{ timeto }}";
     const selectedProject = qs.get("project") || "ALL";
     const selectedLine = qs.get("line") || "ALL";
+    toggleGraphPanels(plant);
     const lineSlotHeading = document.getElementById("line-slot-heading");
-    if (lineSlotHeading) {
+    if (lineSlotHeading && !isAllPlant) {
       lineSlotHeading.textContent = `Line-wise Production (${toSlotHeaderLabel(from, to)})`;
     }
 
@@ -657,6 +669,14 @@ async function refreshCharts() {
     plantDonutChart = buildOrUpdatePlantDonut(plantDonutChart, plantLabels, plantValues, plantColors);
     renderPlantSideList(plantEntries, plantTotal, plantColors);
     document.getElementById("asof").textContent = "Last updated: " + (live.as_of || "").replace("T", " ");
+
+    if (isAllPlant) {
+      if (firstLoad) {
+        hideLoading();
+        firstLoad = false;
+      }
+      return;
+    }
 
     const rows = slotRows;
     updateDynamicFilters(rows);
