@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <title>Production Graphs</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
   <script>
@@ -19,152 +19,140 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --bg:#eef1f6; --surface:#fff; --border:#dde1ea; --border2:#c8cedb;
-      --text:#0f172a; --muted:#64748b; --blue:#2563eb; --blue-lt:#eff6ff; --blue-mid:#bfdbfe;
-      --amber:#b45309; --amber-lt:#fffbeb; --amber-mid:#fde68a; --radius:10px; --radius-lg:14px;
-      --shadow-sm:0 1px 3px rgba(0,0,0,.05),0 1px 2px rgba(0,0,0,.03);
-      --shadow:0 4px 14px rgba(0,0,0,.07),0 1px 3px rgba(0,0,0,.04);
+      --bg:#f0f2f7; --bg2:#e8ebf2; --surface:#fff; --surface2:#f7f8fb; --surface3:#edf0f5;
+      --border:#e2e6ef; --border2:#cdd3e0;
+      --text:#0d1526; --text2:#2e3f5c; --muted:#5e748e; --muted2:#8fa0b4;
+      --blue:#2563eb; --blue-lt:#eff6ff; --blue-mid:#bfdbfe; --blue-dark:#1d4ed8;
+      --amber:#d97706; --amber-lt:#fffbeb; --amber-mid:#fde68a; --amber-text:#92400e;
+      --green:#10b981; --green-lt:#ecfdf5; --green-mid:#a7f3d0; --green-dark:#059669;
+      --red:#dc2626; --red-lt:#fef2f2;
+      --radius:11px; --radius-lg:16px; --radius-xl:20px;
+      --shadow-sm:0 1px 4px rgba(13,21,38,.06),0 1px 2px rgba(13,21,38,.04);
+      --shadow:0 4px 18px rgba(13,21,38,.08),0 1px 4px rgba(13,21,38,.04);
+      --shadow-lg:0 12px 36px rgba(13,21,38,.11),0 3px 10px rgba(13,21,38,.05);
     }
     :root[data-theme="dark"] {
-      --bg:#0b1220; --surface:#0f172a; --border:#24344f; --border2:#33496b;
-      --text:#e2e8f0; --muted:#93a4bd; --blue:#3b82f6; --blue-lt:#13284f; --blue-mid:#2b4f85;
-      --amber:#f0c879; --amber-lt:#2a1f0f; --amber-mid:#7a6028;
-      --shadow-sm:0 1px 2px rgba(0,0,0,.35),0 1px 4px rgba(0,0,0,.25);
-      --shadow:0 6px 18px rgba(0,0,0,.35),0 1px 4px rgba(0,0,0,.25);
+      --bg:#080e1c; --bg2:#0a1120; --surface:#0e1729; --surface2:#101d30; --surface3:#162338;
+      --border:#1e2f47; --border2:#2c4263;
+      --text:#dde6f5; --text2:#b8cce4; --muted:#7a94b2; --muted2:#607a96;
+      --blue:#4f8ef7; --blue-lt:#0f2045; --blue-mid:#1f3d78; --blue-dark:#6ba3ff;
+      --amber:#fbbf24; --amber-lt:#1e1200; --amber-mid:#5c3d00; --amber-text:#fcd34d;
+      --green:#34d399; --green-lt:#0a2318; --green-mid:#1a5c38; --green-dark:#6ee7b7;
+      --red-lt:#250d0d;
+      --shadow-sm:0 1px 3px rgba(0,0,0,.45),0 1px 5px rgba(0,0,0,.3);
+      --shadow:0 6px 22px rgba(0,0,0,.4),0 2px 6px rgba(0,0,0,.3);
+      --shadow-lg:0 14px 40px rgba(0,0,0,.5),0 4px 12px rgba(0,0,0,.35);
     }
-    body { font-family:"Plus Jakarta Sans",sans-serif; background:var(--bg); color:var(--text); }
+    body { font-family:"Plus Jakarta Sans",sans-serif; background:var(--bg); color:var(--text); transition:background .25s,color .25s; }
     .navbar {
-      background:var(--surface); border-bottom:1px solid var(--border); height:58px; padding:0 28px;
-      display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:50; box-shadow:var(--shadow-sm);
+      background:var(--surface); border-bottom:1px solid var(--border); height:60px; padding:0 28px;
+      display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:50;
+      box-shadow:0 2px 12px rgba(13,21,38,.07);
     }
+    :root[data-theme="dark"] .navbar { box-shadow:0 2px 16px rgba(0,0,0,.4); }
     .nb-left { display:flex; align-items:center; gap:14px; }
-    .nb-logo { width:34px; height:34px; border-radius:9px; background:var(--blue); display:flex; align-items:center; justify-content:center; }
+    .nb-logo {
+      width:36px; height:36px; border-radius:10px;
+      background:linear-gradient(135deg,#2563eb 0%,#1e40af 100%);
+      display:flex; align-items:center; justify-content:center;
+      box-shadow:0 2px 8px rgba(37,99,235,.35);
+    }
     .nb-logo svg { stroke:#fff; }
-    .nb-title { font-size:.93rem; font-weight:700; letter-spacing:-.02em; }
-    .nb-sub { font-size:.67rem; color:var(--muted); font-family:"IBM Plex Mono",monospace; margin-top:1px; }
+    .nb-brand { font-family:"Syne",sans-serif; font-size:1rem; font-weight:700; letter-spacing:-.02em; color:var(--text); }
+    .nb-sub { font-size:.64rem; color:var(--muted); font-family:"IBM Plex Mono",monospace; margin-top:1px; }
     .nb-right { display:flex; align-items:center; gap:10px; }
-    .nb-nav { display:flex; align-items:center; gap:8px; }
+    .nb-nav { display:flex; align-items:center; gap:4px; }
     .nb-link {
-      text-decoration:none; color:var(--muted); font-size:.78rem; font-weight:600;
-      padding:6px 11px; border-radius:8px; border:1px solid transparent; transition:all .14s;
+      text-decoration:none; color:var(--muted); font-size:.77rem; font-weight:600;
+      padding:6px 13px; border-radius:9px; border:1px solid transparent; transition:all .15s;
     }
-    .nb-link:hover { color:#334155; background:#f5f7fa; border-color:var(--border); }
-    .nb-link.active { color:#1d4ed8; background:var(--blue-lt); border-color:var(--blue-mid); }
-    .nb-date { font-family:"IBM Plex Mono",monospace; font-size:.72rem; color:var(--muted); background:#f5f7fa; border:1px solid var(--border); border-radius:6px; padding:4px 10px; }
-    .btn-logout {
-      display:flex; align-items:center; gap:6px; font-size:.77rem; font-weight:600; color:var(--muted);
-      background:var(--surface); border:1px solid var(--border2); border-radius:6px; padding:0 13px; height:32px; text-decoration:none;
-    }
-    .profile-menu { position: relative; }
+    .nb-link:hover { color:var(--text2); background:var(--surface2); border-color:var(--border); }
+    .nb-link.active { color:var(--blue-dark); background:var(--blue-lt); border-color:var(--blue-mid); font-weight:700; }
+    :root[data-theme="dark"] .nb-link.active { color:var(--blue); }
+    .nb-date { font-family:"IBM Plex Mono",monospace; font-size:.7rem; color:var(--muted); background:var(--surface2); border:1px solid var(--border); border-radius:7px; padding:5px 11px; }
+    .profile-menu { position:relative; }
     .profile-btn {
-      width:34px; height:34px; border-radius:999px; border:1px solid var(--border2); background:var(--surface);
-      color:var(--muted); display:inline-flex; align-items:center; justify-content:center; cursor:pointer; transition:all .14s;
+      width:36px; height:36px; border-radius:999px; border:1.5px solid var(--border2); background:var(--surface2);
+      color:var(--muted); display:inline-flex; align-items:center; justify-content:center; cursor:pointer; transition:all .15s;
     }
-    .profile-btn:hover { color:var(--text); border-color:var(--blue-mid); background:var(--blue-lt); }
+    .profile-btn:hover { color:var(--blue); border-color:var(--blue-mid); background:var(--blue-lt); }
     .profile-pop {
-      position:absolute; right:0; top:calc(100% + 8px); min-width:220px; background:var(--surface);
-      border:1px solid var(--border); border-radius:10px; box-shadow:var(--shadow); padding:6px; display:none; z-index:80;
+      position:absolute; right:0; top:calc(100% + 10px); min-width:230px; background:var(--surface);
+      border:1px solid var(--border); border-radius:13px; box-shadow:var(--shadow-lg); padding:7px; display:none; z-index:80;
     }
-    .profile-pop.open { display:block; }
+    .profile-pop.open { display:block; animation:popIn .15s ease-out; }
+    @keyframes popIn { from { opacity:0; transform:translateY(-6px) scale(.97); } to { opacity:1; transform:none; } }
     .pm-item {
-      width:100%; text-decoration:none; border:none; background:transparent; color:var(--text); border-radius:8px;
-      padding:8px 9px; display:flex; align-items:center; justify-content:space-between; gap:8px; cursor:pointer; font-size:.78rem;
+      width:100%; text-decoration:none; border:none; background:transparent; color:var(--text2); border-radius:9px;
+      padding:9px 10px; display:flex; align-items:center; justify-content:space-between; gap:8px; cursor:pointer; font-size:.78rem;
       font-family:"Plus Jakarta Sans",sans-serif;
     }
-    .pm-item:hover { background:#f5f7fa; }
-    :root[data-theme="dark"] .pm-item:hover { background:#111d34; }
-    .pm-item-left { display:inline-flex; align-items:center; gap:8px; }
+    .pm-item:hover { background:var(--surface2); }
+    .pm-item-left { display:inline-flex; align-items:center; gap:9px; }
     .pm-item.danger { color:#ef4444; }
+    .pm-item.danger:hover { background:var(--red-lt); }
     .pm-state {
-      font-family:"IBM Plex Mono",monospace; font-size:.68rem; color:var(--muted);
-      border:1px solid var(--border2); border-radius:999px; padding:2px 8px;
+      font-family:"IBM Plex Mono",monospace; font-size:.66rem; color:var(--muted);
+      border:1px solid var(--border2); border-radius:999px; padding:2px 9px;
     }
-    .page { max-width:1440px; margin:0 auto; padding:24px 28px 50px; }
-    .head { display:flex; align-items:center; gap:10px; margin-bottom:14px; }
-    .head h2 { font-size:.92rem; font-weight:700; color:#334155; }
-    .head .sub { font-size:.68rem; color:var(--muted); font-family:"IBM Plex Mono",monospace; }
-    .line { flex:1; height:1px; background:var(--border); }
+    .page { max-width:1440px; margin:0 auto; padding:26px 28px 56px; }
+    .head { display:flex; align-items:center; gap:10px; margin-bottom:18px; }
+    .head h2 { font-family:"Syne",sans-serif; font-size:.95rem; font-weight:700; color:var(--text); letter-spacing:-.01em; }
+    .head .sub { font-size:.67rem; color:var(--muted); font-family:"IBM Plex Mono",monospace; }
+    .line { flex:1; height:1px; background:linear-gradient(90deg,var(--border),transparent); }
     .filter-row {
       background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg);
-      box-shadow:var(--shadow-sm); padding:14px 16px; display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:14px;
+      box-shadow:var(--shadow); padding:14px 18px; display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:16px;
     }
-    .fg { display:flex; align-items:center; border:1px solid var(--border2); border-radius:var(--radius); overflow:hidden; height:36px; background:var(--surface); }
+    .fg { display:flex; align-items:center; border:1.5px solid var(--border2); border-radius:var(--radius); overflow:hidden; height:38px; background:var(--surface); transition:border-color .15s,box-shadow .15s; }
+    .fg:focus-within { border-color:var(--blue-mid); box-shadow:0 0 0 3px rgba(37,99,235,.12); }
     .fg-lbl {
-      padding:0 11px; font-size:.62rem; font-weight:700; font-family:"IBM Plex Mono",monospace; text-transform:uppercase; letter-spacing:.1em;
-      color:var(--muted); border-right:1px solid var(--border2); height:100%; display:flex; align-items:center; background:#edf0f5;
+      padding:0 11px; font-size:.6rem; font-weight:700; font-family:"IBM Plex Mono",monospace; text-transform:uppercase; letter-spacing:.12em;
+      color:var(--muted); border-right:1.5px solid var(--border2); height:100%; display:flex; align-items:center; background:var(--surface3);
     }
     .fg select { border:none; outline:none; background:transparent; color:var(--text); font-family:"IBM Plex Mono",monospace; font-size:.78rem; padding:0 10px; min-width:130px; }
-    .panel-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    .fg select option { background:var(--surface); color:var(--text); }
+    .panel-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
     .panel.wide { grid-column: 1 / -1; }
-    .panel { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); box-shadow:var(--shadow); padding:14px; }
-    .panel h3 { font-size:.78rem; font-weight:700; color:#334155; margin-bottom:10px; }
-    :root[data-theme="dark"] .panel h3 { color: var(--text2, #cbd5e1); }
-    .chart-wrap { height: 360px; }
+    .panel {
+      background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg);
+      box-shadow:var(--shadow); padding:18px; transition:box-shadow .2s;
+    }
+    .panel:hover { box-shadow:var(--shadow-lg); }
+    .hidden { display:none !important; }
+    .panel h3 { font-family:"Syne",sans-serif; font-size:.82rem; font-weight:700; color:var(--text); margin-bottom:14px; letter-spacing:-.01em; }
+    .chart-wrap { height: 370px; }
     .panel canvas { width:100%; height:100% !important; }
-    .plant-viz-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 12px; }
+    .plant-viz-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 14px; }
     .mini-panel {
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
-      padding: 10px;
-      min-height: 350px;
+      border: 1px solid var(--border); border-radius: 14px;
+      background: var(--surface); padding: 12px; min-height: 360px;
+      box-shadow: var(--shadow);
     }
     .mini-panel h4 {
-      font-size: .7rem;
-      color: #475569;
-      font-family: "IBM Plex Mono", monospace;
-      letter-spacing: .08em;
-      text-transform: uppercase;
-      margin-bottom: 8px;
+      font-family:"Syne",sans-serif; font-size:.72rem; font-weight:700;
+      color:var(--text2); letter-spacing:.04em; text-transform:uppercase; margin-bottom:10px;
     }
-    .chart-wrap.leader { height: 290px; }
+    .chart-wrap.leader { height: 300px; }
     .donut-stack { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: center; }
-    .chart-wrap.donut {
-      height: 250px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding-top: 8px;
-    }
+    .chart-wrap.donut { height: 260px; display: flex; align-items: center; justify-content: center; padding-top: 8px; }
     .plant-list {
-      list-style: none;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      max-height: 250px;
-      overflow: auto;
-      padding-right: 4px;
+      list-style: none; display: flex; flex-direction: column; gap: 8px;
+      max-height: 260px; overflow: auto; padding-right: 4px;
     }
     .plant-list li {
-      display: grid;
-      grid-template-columns: auto 1fr auto auto;
-      gap: 8px;
-      align-items: center;
-      padding: 6px 8px;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      background: #fff;
-      font-family: "IBM Plex Mono", monospace;
-      font-size: .68rem;
-      color: #334155;
+      display: grid; grid-template-columns: auto 1fr auto auto; gap: 8px;
+      align-items: center; padding: 7px 10px;
+      border: 1px solid var(--border); border-radius: 9px;
+      background: var(--surface2); font-family: "IBM Plex Mono", monospace;
+      font-size: .68rem; color: var(--text2);
+      transition: background .12s, border-color .12s;
     }
-    :root[data-theme="dark"] .mini-panel { background: linear-gradient(180deg, #0f172a 0%, #13203a 100%); }
-    :root[data-theme="dark"] .plant-list li { background:#0f172a; color:#cbd5e1; }
-    .dot {
-      width: 9px;
-      height: 9px;
-      border-radius: 50%;
-      display: inline-block;
-    }
-    .rank {
-      min-width: 24px;
-      text-align: right;
-      color: #64748b;
-    }
-    .share {
-      color: #0f172a;
-      font-weight: 600;
-    }
+    .plant-list li:hover { background: var(--blue-lt); border-color: var(--blue-mid); }
+    :root[data-theme="dark"] .plant-list li:hover { background: var(--blue-lt); }
+    .dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+    .rank { min-width: 24px; text-align: right; color: var(--muted); }
+    .share { color: var(--text); font-weight: 700; }
     #progress-bar {
       display: none;
       position: fixed;
@@ -172,46 +160,33 @@
       left: 0;
       height: 3px;
       width: 0;
-      background: var(--blue);
+      background: linear-gradient(90deg, var(--blue), #60a5fa, var(--green));
       z-index: 10000;
-      border-radius: 0 2px 2px 0;
-      box-shadow: 0 0 8px rgba(37, 99, 235, .5);
+      border-radius: 0 3px 3px 0;
+      box-shadow: 0 0 10px rgba(37, 99, 235, .5);
     }
     #loading-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(238, 241, 246, 0.82);
-      backdrop-filter: blur(2px);
-      z-index: 9999;
-      align-items: center;
-      justify-content: center;
+      display: none; position: fixed; inset: 0;
+      background: rgba(240,242,247,.82);
+      backdrop-filter: blur(4px); z-index: 9999;
+      align-items: center; justify-content: center;
     }
+    :root[data-theme="dark"] #loading-overlay { background: rgba(8,14,28,.82); }
     #loading-overlay.active { display: flex; }
     .loader-card {
-      background: var(--surface);
-      border: 1px solid var(--border2);
-      border-radius: 12px;
-      padding: 22px 30px;
-      box-shadow: var(--shadow);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 10px;
+      background: var(--surface); border: 1px solid var(--border2);
+      border-radius: 20px; padding: 28px 44px;
+      box-shadow: var(--shadow-lg);
+      display: flex; flex-direction: column; align-items: center; gap: 14px;
+      animation: popIn .2s ease-out;
     }
+    @keyframes popIn { from { opacity:0; transform:translateY(-6px) scale(.97); } to { opacity:1; transform:none; } }
     .spinner {
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
-      border: 2px solid var(--border2);
-      border-top-color: var(--blue);
+      width: 30px; height: 30px; border-radius: 50%;
+      border: 2.5px solid var(--border2); border-top-color: var(--blue);
       animation: spin .6s linear infinite;
     }
-    .loader-text {
-      font-family: "IBM Plex Mono", monospace;
-      font-size: 0.72rem;
-      color: var(--muted);
-    }
+    .loader-text { font-family: "IBM Plex Mono", monospace; font-size: 0.72rem; color: var(--muted); letter-spacing: .04em; }
     @keyframes spin { to { transform: rotate(360deg); } }
     @media (max-width: 980px) {
       .panel-grid { grid-template-columns:1fr; }
@@ -239,7 +214,7 @@
       </svg>
     </div>
     <div>
-      <div class="nb-title">Production Dashboard</div>
+      <div class="nb-brand">Production Dashboard</div>
       <div class="nb-sub">Charts and visual trends</div>
     </div>
   </div>
@@ -282,15 +257,15 @@
 <div class="page">
   <div class="head">
     <h2>Production Graphs</h2>
-    <span class="sub">Auto-updating every <span id="refresh-sec">30</span>s · <span id="asof">—</span></span>
+    <span class="sub">Auto-updating every <span id="refresh-sec">30</span>s - <span id="asof">--</span></span>
     <div class="line"></div>
   </div>
 
   <form id="graph-form" method="get" class="filter-row" onsubmit="showLoading()">
     <div class="fg">
       <span class="fg-lbl">Plant</span>
-      <select id="plant" name="plant" onchange="this.form.submit()">
-        {# <option value="ALL" {% if plant == "ALL" %}selected{% endif %}>All Plants</option> #}
+      <select id="plant" name="plant" onchange="onPlantChange()">
+        <option value="ALL" {% if plant == "ALL" %}selected{% endif %}>All Plants</option>
         {% for p in plant_names %}
         <option value="{{ p }}" {% if p == plant or (not plant and p == "GPIL-2") %}selected{% endif %}>{{ p }}</option>
         {% endfor %}
@@ -335,30 +310,13 @@
   </form>
 
   <div class="panel-grid">
-    <div class="panel">
-      <h3>Line-wise Production (Today 8 AM+)</h3>
-      <div class="chart-wrap"><canvas id="lineTodayChart"></canvas></div>
+    <div class="panel" id="main-chart-panel">
+      <h3 id="main-chart-heading">Line-wise Production (Today 8 AM+)</h3>
+      <div class="chart-wrap"><canvas id="mainChart"></canvas></div>
     </div>
-    <div class="panel">
-      <h3 id="line-slot-heading">Line-wise Production (Current Hour)</h3>
-      <div class="chart-wrap"><canvas id="lineChart"></canvas></div>
-    </div>
-    <div class="panel wide">
-      <h3>Plant-wise Total Production (8 AM+)</h3>
-      <div class="plant-viz-grid">
-        <div class="mini-panel">
-          <h4>Ranked Horizontal Leaderboard</h4>
-          <div class="chart-wrap leader"><canvas id="plantLeaderboardChart"></canvas></div>
-        </div>
-        <div class="mini-panel">
-          <h4>Percentage Contribution</h4>
-          <h4></h4>
-          <div class="donut-stack">
-            <div class="chart-wrap donut"><canvas id="plantDonutChart"></canvas></div>
-            <ul id="plantSideList" class="plant-list"></ul>
-          </div>
-        </div>
-      </div>
+    <div class="panel" id="detail-chart-panel">
+      <h3 id="detail-chart-heading">Line-wise Production (Current Hour)</h3>
+      <div class="chart-wrap"><canvas id="detailChart"></canvas></div>
     </div>
   </div>
 </div>
@@ -367,12 +325,13 @@
 const qs = new URLSearchParams(window.location.search);
 const fmt = n => (typeof n === "number" ? n : 0).toLocaleString("en-IN");
 const AUTO_REFRESH_MS = 30000;
-let plantLeaderboardChart;
-let plantDonutChart;
-let lineChart;
-let lineTodayChart;
+let mainChart;
+let detailChart;
 let firstLoad = true;
-const plantSideListEl = document.getElementById("plantSideList");
+const mainChartPanel = document.getElementById("main-chart-panel");
+const detailChartPanel = document.getElementById("detail-chart-panel");
+const mainChartHeading = document.getElementById("main-chart-heading");
+const detailChartHeading = document.getElementById("detail-chart-heading");
 
 const overlay = document.getElementById("loading-overlay");
 const bar = document.getElementById("progress-bar");
@@ -420,6 +379,18 @@ function onSlotChange() {
   document.getElementById("graph-form").submit();
 }
 
+function onPlantChange() {
+  showLoading();
+  const plantSel = document.getElementById("plant");
+  const projectSel = document.getElementById("project");
+  const lineSel = document.getElementById("line");
+  if (plantSel && plantSel.value === "ALL") {
+    if (projectSel) projectSel.value = "ALL";
+    if (lineSel) lineSel.value = "ALL";
+  }
+  document.getElementById("graph-form").submit();
+}
+
 function toSlotHeaderLabel(from, to) {
   const to12 = (hhmm) => {
     const h = parseInt((hhmm || "").split(":")[0], 10);
@@ -431,10 +402,20 @@ function toSlotHeaderLabel(from, to) {
   return `${to12(from)} - ${to12(to)}`;
 }
 
-function buildOrUpdateChart(chartRef, canvasId, labels, values, color, horizontal=false) {
+function getThemeColors() {
+  const dark = document.documentElement.getAttribute("data-theme") === "dark";
+  return {
+    tickColor: dark ? "#7a94b2" : "#5e748e",
+    gridColor: dark ? "#1a2d42" : "#eaeff6",
+    labelColor: dark ? "#b8cce4" : "#334155",
+  };
+}
+
+function buildOrUpdateChart(chartRef, canvasId, labels, values, color, horizontal=false, onClick=null) {
+  const tc = getThemeColors();
   const cfg = {
     type: "bar",
-    data: { labels, datasets: [{ data: values, borderRadius: 6, backgroundColor: color }] },
+    data: { labels, datasets: [{ data: values, borderRadius: 7, backgroundColor: color, hoverBackgroundColor: color + "dd" }] },
     options: {
       indexAxis: horizontal ? "y" : "x",
       responsive: true,
@@ -446,7 +427,7 @@ function buildOrUpdateChart(chartRef, canvasId, labels, values, color, horizonta
             const vals = (ctx.chart.data.datasets[0].data || []).map(v => Number(v) || 0);
             const max = vals.length ? Math.max(...vals) : 0;
             const v = Number(ctx.raw) || 0;
-            return v >= max * 0.14 ? "#ffffff" : "#334155";
+            return v >= max * 0.14 ? "#ffffff" : tc.labelColor;
           },
           anchor: "end",
           align: (ctx) => {
@@ -463,8 +444,7 @@ function buildOrUpdateChart(chartRef, canvasId, labels, values, color, horizonta
             if (horizontal) return v >= max * 0.14 ? 6 : 4;
             return v >= max * 0.14 ? 2 : 4;
           },
-          clamp: true,
-          clip: false,
+          clamp: true, clip: false,
           formatter: (v) => fmt(v),
           font: { family: "IBM Plex Mono", size: 10, weight: "600" }
         }
@@ -472,25 +452,28 @@ function buildOrUpdateChart(chartRef, canvasId, labels, values, color, horizonta
       layout: { padding: { right: 26 } },
       scales: {
         x: {
-          ticks: {
-            color: "#64748b",
-            font: { family: "IBM Plex Mono", size: 10 },
-            autoSkip: false,
-            minRotation: horizontal ? 0 : 55,
-            maxRotation: horizontal ? 0 : 55
-          },
-          grid: { color: "#eef2f7" }
+          ticks: { color: tc.tickColor, font: { family: "IBM Plex Mono", size: 10 }, autoSkip: false, minRotation: horizontal ? 0 : 55, maxRotation: horizontal ? 0 : 55 },
+          grid: { color: tc.gridColor }
         },
         y: {
-          ticks: { color: "#64748b", font: { family: "IBM Plex Mono", size: 10 }, autoSkip: true, maxTicksLimit: horizontal ? 20 : 8 },
-          grid: { color: "#eef2f7" }
+          ticks: { color: tc.tickColor, font: { family: "IBM Plex Mono", size: 10 }, autoSkip: true, maxTicksLimit: horizontal ? 20 : 8 },
+          grid: { color: tc.gridColor }
         },
       }
+    },
+    onClick: (_, elements, chart) => {
+      if (!onClick || !elements.length) return;
+      onClick(elements[0].index, chart);
     }
   };
   if (!chartRef) return new Chart(document.getElementById(canvasId), cfg);
   chartRef.data.labels = labels;
   chartRef.data.datasets[0].data = values;
+  chartRef.options.indexAxis = horizontal ? "y" : "x";
+  chartRef.options.onClick = (_, elements, chart) => {
+    if (!onClick || !elements.length) return;
+    onClick(elements[0].index, chart);
+  };
   chartRef.update();
   return chartRef;
 }
@@ -499,108 +482,7 @@ function getPlantEntries(plantTotals) {
   return Object.entries(plantTotals || {})
     .map(([k, v]) => [k, Number(v) || 0])
     .filter(([,v]) => v > 0)
-    .sort((a, b) => (b[1] - a[1]) || a[0].localeCompare(b[0]));
-}
-
-function buildOrUpdatePlantLeaderboard(chartRef, labels, values) {
-  const cfg = {
-    type: "bar",
-    data: {
-      labels,
-      datasets: [{
-        data: values,
-        borderRadius: 8,
-        borderSkipped: false,
-        backgroundColor: (ctx) => {
-          const chart = ctx.chart;
-          const { chartArea } = chart;
-          if (!chartArea) return "#3b82f6";
-          const g = chart.ctx.createLinearGradient(chartArea.left, 0, chartArea.right, 0);
-          g.addColorStop(0, "#93c5fd");
-          g.addColorStop(1, "#2563eb");
-          return g;
-        }
-      }]
-    },
-    options: {
-      indexAxis: "y",
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { display: false },
-        datalabels: {
-          color: "#1e293b",
-          anchor: "end",
-          align: "right",
-          offset: 4,
-          formatter: (v) => fmt(v),
-          font: { family: "IBM Plex Mono", size: 10, weight: "600" }
-        }
-      },
-      scales: {
-        x: {
-          ticks: { color: "#64748b", font: { family: "IBM Plex Mono", size: 10 } },
-          grid: { color: "#edf2f7" }
-        },
-        y: {
-          ticks: { color: "#334155", font: { family: "IBM Plex Mono", size: 10 } },
-          grid: { display: false }
-        }
-      }
-    }
-  };
-  if (!chartRef) return new Chart(document.getElementById("plantLeaderboardChart"), cfg);
-  chartRef.data.labels = labels;
-  chartRef.data.datasets[0].data = values;
-  chartRef.update();
-  return chartRef;
-}
-
-function buildOrUpdatePlantDonut(chartRef, labels, values, colors) {
-  const cfg = {
-    type: "doughnut",
-    data: {
-      labels,
-      datasets: [{
-        data: values,
-        backgroundColor: colors,
-        borderWidth: 0,
-        hoverOffset: 6
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      cutout: "62%",
-      plugins: {
-        legend: { display: false },
-        datalabels: { display: false }
-      }
-    }
-  };
-  if (!chartRef) return new Chart(document.getElementById("plantDonutChart"), cfg);
-  chartRef.data.labels = labels;
-  chartRef.data.datasets[0].data = values;
-  chartRef.data.datasets[0].backgroundColor = colors;
-  chartRef.update();
-  return chartRef;
-}
-
-function renderPlantSideList(entries, total, colors) {
-  if (!plantSideListEl) return;
-  if (!entries.length) {
-    plantSideListEl.innerHTML = '<li><span class="rank">-</span><span>No plant totals</span><span>0</span><span class="share">0%</span></li>';
-    return;
-  }
-  plantSideListEl.innerHTML = entries.map(([name, val], i) => {
-    const share = total > 0 ? ((val / total) * 100) : 0;
-    return `<li>
-      <span class="rank">${i + 1}</span>
-      <span><span class="dot" style="background:${colors[i]}"></span> ${name}</span>
-      <span>${fmt(val)}</span>
-      <span class="share">${share.toFixed(1)}%</span>
-    </li>`;
-  }).join("");
+    .sort((a, b) => a[0].localeCompare(b[0]));
 }
 
 function updateDynamicFilters(rows) {
@@ -627,14 +509,11 @@ function updateDynamicFilters(rows) {
 async function refreshCharts() {
   try {
     const plant = qs.get("plant") || "{{ plant }}";
+    const isAllPlants = plant === "ALL";
     const from = qs.get("timefrom") || "{{ timefrom }}";
     const to = qs.get("timeto") || "{{ timeto }}";
     const selectedProject = qs.get("project") || "ALL";
     const selectedLine = qs.get("line") || "ALL";
-    const lineSlotHeading = document.getElementById("line-slot-heading");
-    if (lineSlotHeading) {
-      lineSlotHeading.textContent = `Line-wise Production (${toSlotHeaderLabel(from, to)})`;
-    }
 
     const [liveRes, breakdownRes, todayRes] = await Promise.all([
       fetch("/api/live_total?plant=ALL", { cache: "no-store" }),
@@ -650,13 +529,45 @@ async function refreshCharts() {
     const plantEntries = getPlantEntries(live.plant_totals || {});
     const plantLabels = plantEntries.map(([k]) => k);
     const plantValues = plantEntries.map(([,v]) => v);
-    const plantTotal = plantValues.reduce((s, v) => s + v, 0);
-    const plantColors = plantEntries.map((_, i) => `hsl(${212 + (i * 19)} 78% ${56 - Math.min(i * 2, 16)}%)`);
-
-    plantLeaderboardChart = buildOrUpdatePlantLeaderboard(plantLeaderboardChart, plantLabels, plantValues);
-    plantDonutChart = buildOrUpdatePlantDonut(plantDonutChart, plantLabels, plantValues, plantColors);
-    renderPlantSideList(plantEntries, plantTotal, plantColors);
     document.getElementById("asof").textContent = "Last updated: " + (live.as_of || "").replace("T", " ");
+
+    if (isAllPlants) {
+      mainChartPanel.classList.add("wide");
+      detailChartPanel.classList.add("hidden");
+      mainChartHeading.textContent = "Plant-wise Total Production (8 AM+)";
+      mainChart = buildOrUpdateChart(
+        mainChart,
+        "mainChart",
+        plantLabels,
+        plantValues,
+        "#2563eb",
+        false,
+        (index) => {
+          const nextPlant = plantLabels[index];
+          if (!nextPlant) return;
+          const nextQs = new URLSearchParams(window.location.search);
+          nextQs.set("plant", nextPlant);
+          nextQs.set("project", "ALL");
+          nextQs.set("line", "ALL");
+          showLoading();
+          window.location.search = nextQs.toString();
+        }
+      );
+      if (detailChart) {
+        detailChart.destroy();
+        detailChart = null;
+      }
+      if (firstLoad) {
+        hideLoading();
+        firstLoad = false;
+      }
+      return;
+    }
+
+    mainChartPanel.classList.remove("wide");
+    detailChartPanel.classList.remove("hidden");
+    mainChartHeading.textContent = "Line-wise Production (Today 8 AM+)";
+    detailChartHeading.textContent = `Line-wise Production (${toSlotHeaderLabel(from, to)})`;
 
     const rows = slotRows;
     updateDynamicFilters(rows);
@@ -672,7 +583,7 @@ async function refreshCharts() {
       .sort((a, b) => a[0].localeCompare(b[0], undefined, { numeric: true, sensitivity: "base" }));
     const lineLabels = topLineEntries.map(([k]) => k);
     const lineValues = topLineEntries.map(([,v]) => v);
-    lineChart = buildOrUpdateChart(lineChart, "lineChart", lineLabels, lineValues, "#f59e0b", false);
+    detailChart = buildOrUpdateChart(detailChart, "detailChart", lineLabels, lineValues, "#f59e0b", false);
 
     const todayRows = (todayBreakdown.rows || []).filter(r =>
       (selectedProject === "ALL" || r.ProjCode === selectedProject) &&
@@ -685,7 +596,7 @@ async function refreshCharts() {
       .sort((a, b) => a[0].localeCompare(b[0], undefined, { numeric: true, sensitivity: "base" }));
     const lineTodayLabels = lineTodayEntries.map(([k]) => k);
     const lineTodayValues = lineTodayEntries.map(([,v]) => v);
-    lineTodayChart = buildOrUpdateChart(lineTodayChart, "lineTodayChart", lineTodayLabels, lineTodayValues, "#2563eb", false);
+    mainChart = buildOrUpdateChart(mainChart, "mainChart", lineTodayLabels, lineTodayValues, "#2563eb", false);
     if (firstLoad) {
       hideLoading();
       firstLoad = false;
@@ -738,3 +649,4 @@ setInterval(refreshCharts, AUTO_REFRESH_MS);
 </script>
 </body>
 </html>
+
