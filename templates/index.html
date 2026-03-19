@@ -1,1215 +1,737 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <title>Production Dashboard</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
-  <script>
-    (function () {
-      const key = "pd_theme";
-      const saved = localStorage.getItem(key);
-      if (saved === "dark" || saved === "light") {
-        document.documentElement.setAttribute("data-theme", saved);
-      }
-    })();
-  </script>
+{% extends "base.html" %}
 
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&display=swap');
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+{% block title %}
+    {% if page == 'dashboard' %}Dashboard{% else %}Breakdown{% endif %} | Meter Production
+{% endblock %}
 
-    :root {
-      --bg:          #f0f2f7;
-      --bg2:         #e8ebf2;
-      --surface:     #ffffff;
-      --surface2:    #f7f8fb;
-      --surface3:    #edf0f5;
-      --border:      #e2e6ef;
-      --border2:     #cdd3e0;
-      --text:        #0d1526;
-      --text2:       #2e3f5c;
-      --muted:       #5e748e;
-      --muted2:      #8fa0b4;
+{% block content %}
+<div id="pdf-wrapper" class="max-w-7xl mx-auto space-y-4 bg-slate-50 dark:bg-obsidian">
 
-      --blue:        #2563eb;
-      --blue-lt:     #eff6ff;
-      --blue-mid:    #bfdbfe;
-      --blue-dark:   #1d4ed8;
-      --blue-xlt:    #f0f7ff;
-
-      --green:       #10b981;
-      --green-lt:    #ecfdf5;
-      --green-mid:   #a7f3d0;
-      --green-dark:  #059669;
-      --green-xlt:   #f0fdf9;
-
-      --amber:       #d97706;
-      --amber-lt:    #fffbeb;
-      --amber-mid:   #fde68a;
-      --amber-text:  #92400e;
-
-      --red:         #dc2626;
-      --red-lt:      #fef2f2;
-
-      --radius-sm:   7px;
-      --radius:      11px;
-      --radius-lg:   16px;
-      --radius-xl:   20px;
-      --shadow-sm:   0 1px 4px rgba(13,21,38,.06), 0 1px 2px rgba(13,21,38,.04);
-      --shadow:      0 4px 18px rgba(13,21,38,.08), 0 1px 4px rgba(13,21,38,.04);
-      --shadow-lg:   0 12px 36px rgba(13,21,38,.11), 0 3px 10px rgba(13,21,38,.05);
-    }
-    :root[data-theme="dark"] {
-      --bg:          #080e1c;
-      --bg2:         #0a1120;
-      --surface:     #0e1729;
-      --surface2:    #101d30;
-      --surface3:    #162338;
-      --border:      #1e2f47;
-      --border2:     #2c4263;
-      --text:        #dde6f5;
-      --text2:       #b8cce4;
-      --muted:       #7a94b2;
-      --muted2:      #607a96;
-      --blue:        #4f8ef7;
-      --blue-lt:     #0f2045;
-      --blue-mid:    #1f3d78;
-      --blue-dark:   #6ba3ff;
-      --blue-xlt:    #0c1c3e;
-      --green:       #34d399;
-      --green-lt:    #0a2318;
-      --green-mid:   #1a5c38;
-      --green-dark:  #6ee7b7;
-      --green-xlt:   #081e15;
-      --amber:       #fbbf24;
-      --amber-lt:    #1e1200;
-      --amber-mid:   #5c3d00;
-      --amber-text:  #fcd34d;
-      --red-lt:      #250d0d;
-      --shadow-sm:   0 1px 3px rgba(0,0,0,.45), 0 1px 5px rgba(0,0,0,.3);
-      --shadow:      0 6px 22px rgba(0,0,0,.4), 0 2px 6px rgba(0,0,0,.3);
-      --shadow-lg:   0 14px 40px rgba(0,0,0,.5), 0 4px 12px rgba(0,0,0,.35);
-    }
-
-    body {
-      font-family: "Plus Jakarta Sans", sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      transition: background .25s, color .25s;
-    }
-
-    /* ── NAVBAR ──────────────────────────────────────────── */
-    .navbar {
-      background: var(--surface);
-      border-bottom: 1px solid var(--border);
-      height: 60px;
-      padding: 0 28px;
-      display: flex; align-items: center; justify-content: space-between;
-      position: sticky; top: 0; z-index: 300;
-      box-shadow: 0 2px 12px rgba(13,21,38,.07);
-    }
-    :root[data-theme="dark"] .navbar {
-      box-shadow: 0 2px 16px rgba(0,0,0,.4);
-    }
-    .nb-left { display: flex; align-items: center; gap: 14px; }
-    .nb-logo {
-      width: 36px; height: 36px; border-radius: 10px;
-      background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
-      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-      box-shadow: 0 2px 8px rgba(37,99,235,.35);
-    }
-    .nb-logo svg { stroke: #fff; }
-    .nb-brand { font-family: "Syne", sans-serif; font-size: 1rem; font-weight: 700; letter-spacing: -0.02em; color: var(--text); }
-    .nb-sub {
-      font-size: 0.64rem; color: var(--muted);
-      font-family: "IBM Plex Mono", monospace; margin-top: 1px;
-      letter-spacing: .02em;
-    }
-    .nb-sep { width: 1px; height: 22px; background: var(--border); }
-    .nb-right { display: flex; align-items: center; gap: 10px; }
-    .nb-nav { display: flex; align-items: center; gap: 4px; }
-    .nb-link {
-      text-decoration: none;
-      color: var(--muted);
-      font-size: 0.77rem;
-      font-weight: 600;
-      padding: 6px 13px;
-      border-radius: 9px;
-      border: 1px solid transparent;
-      transition: all .15s;
-      letter-spacing: .01em;
-    }
-    .nb-link:hover { color: var(--text2); background: var(--surface2); border-color: var(--border); }
-    .nb-link.active {
-      color: var(--blue-dark);
-      background: var(--blue-lt);
-      border-color: var(--blue-mid);
-      font-weight: 700;
-    }
-    :root[data-theme="dark"] .nb-link.active { color: var(--blue); }
-    .badge-live {
-      display: flex; align-items: center; gap: 6px;
-      background: var(--green-lt); border: 1px solid var(--green-mid);
-      border-radius: 999px; padding: 4px 12px;
-      font-size: 0.66rem; font-weight: 700;
-      color: var(--green-dark); font-family: "IBM Plex Mono", monospace;
-      letter-spacing: .06em; text-transform: uppercase;
-    }
-    :root[data-theme="dark"] .badge-live { color: var(--green); }
-    .dot-live {
-      width: 7px; height: 7px; border-radius: 50%;
-      background: var(--green); flex-shrink: 0;
-      animation: blink 1.8s infinite;
-    }
-    @keyframes blink {
-      0%,100% { opacity:1; box-shadow: 0 0 0 0 rgba(16,185,129,.5); }
-      50%      { box-shadow: 0 0 0 5px rgba(16,185,129,0); }
-    }
-    .nb-date {
-      font-family: "IBM Plex Mono", monospace;
-      font-size: 0.7rem; color: var(--muted);
-      background: var(--surface2); border: 1px solid var(--border);
-      border-radius: var(--radius-sm); padding: 5px 11px;
-      letter-spacing: .02em;
-    }
-    .btn-logout {
-      display: flex; align-items: center; gap: 6px;
-      font-size: 0.77rem; font-weight: 600; color: var(--muted);
-      background: var(--surface); border: 1px solid var(--border2);
-      border-radius: var(--radius-sm); padding: 0 13px; height: 33px;
-      text-decoration: none; transition: all .14s;
-    }
-    .btn-logout:hover { color: var(--red); border-color: #fca5a5; background: var(--red-lt); }
-    .profile-menu { position: relative; }
-    .profile-btn {
-      width: 36px; height: 36px; border-radius: 999px;
-      border: 1.5px solid var(--border2);
-      background: var(--surface2);
-      color: var(--muted);
-      display: inline-flex; align-items: center; justify-content: center;
-      cursor: pointer; transition: all .15s;
-    }
-    .profile-btn:hover { color: var(--blue); border-color: var(--blue-mid); background: var(--blue-lt); }
-    .profile-pop {
-      position: absolute; right: 0; top: calc(100% + 10px); min-width: 230px;
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 13px; box-shadow: var(--shadow-lg); padding: 7px; display: none; z-index: 350;
-    }
-    .profile-pop.open { display: block; animation: popIn .15s ease-out; }
-    @keyframes popIn { from { opacity:0; transform:translateY(-6px) scale(.97); } to { opacity:1; transform:none; } }
-    .pm-divider { height: 1px; background: var(--border); margin: 5px 0; }
-    .pm-item {
-      width: 100%; text-decoration: none; border: none; background: transparent;
-      color: var(--text2); font-family: "Plus Jakarta Sans", sans-serif;
-      font-size: .78rem; border-radius: 9px; padding: 9px 10px;
-      display: flex; align-items: center; justify-content: space-between; gap: 8px; cursor: pointer;
-    }
-    .pm-item:hover { background: var(--surface2); }
-    .pm-item-left { display: inline-flex; align-items: center; gap: 9px; }
-    .pm-item.danger { color: #ef4444; }
-    .pm-item.danger:hover { background: var(--red-lt); }
-    .pm-state {
-      font-family: "IBM Plex Mono", monospace; font-size: .66rem;
-      color: var(--muted); border: 1px solid var(--border2); border-radius: 999px; padding: 2px 9px;
-    }
-
-    /* ── PAGE SHELL ───────────────────────────────────────── */
-    .page { max-width: 1440px; margin: 0 auto; padding: 28px 28px 70px; }
-
-    /* ── SECTION HEADER ───────────────────────────────────── */
-    .sec-head { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; }
-    .sec-icon {
-      width: 28px; height: 28px; border-radius: 8px;
-      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-      box-shadow: 0 1px 4px rgba(0,0,0,.1);
-    }
-    .sec-icon.green { background: linear-gradient(135deg, #d1fae5, #a7f3d0); color: var(--green-dark); }
-    .sec-icon.blue  { background: linear-gradient(135deg, #dbeafe, #bfdbfe); color: var(--blue-dark); }
-    :root[data-theme="dark"] .sec-icon.green { background: var(--green-lt); color: var(--green); }
-    :root[data-theme="dark"] .sec-icon.blue  { background: var(--blue-lt); color: var(--blue); }
-    .sec-title { font-family: "Syne", sans-serif; font-size: 0.85rem; font-weight: 700; color: var(--text); letter-spacing: -.01em; }
-    .sec-sub   { font-size: 0.67rem; color: var(--muted); font-family: "IBM Plex Mono", monospace; margin-left: 4px; }
-    .sec-line  { flex: 1; height: 1px; background: linear-gradient(90deg, var(--border), transparent); }
-
-    /* ── LIVE COUNTER STRIP ───────────────────────────────── */
-    .live-section { margin-bottom: 30px; }
-
-    .live-strip {
-      display: grid;
-      grid-template-columns: 1.35fr repeat(5, minmax(148px, 1fr));
-      gap: 12px;
-    }
-
-    .lc {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 18px;
-      padding: 14px 16px;
-      min-height: 92px;
-      box-shadow: var(--shadow);
-      position: relative; overflow: hidden;
-      display: flex; flex-direction: column; justify-content: center;
-      transition: box-shadow .2s, transform .2s, border-color .2s;
-    }
-    .lc-link { display: block; color: inherit; text-decoration: none; }
-    .lc::after {
-      content: "";
-      position: absolute; inset: auto 0 0 0; height: 3px;
-      background: linear-gradient(90deg, var(--border2), transparent);
-    }
-    .lc:hover {
-      transform: translateY(-3px);
-      border-color: var(--border2);
-      box-shadow: var(--shadow-lg);
-    }
-
-    /* Total card accent */
-    .lc.grand {
-      border-color: var(--blue-mid);
-      background: linear-gradient(145deg, var(--blue-lt) 0%, var(--surface) 60%);
-    }
-    .lc.grand::before {
-      content: ""; position: absolute; top: 0; left: 0; right: 0; height: 3px;
-      background: linear-gradient(90deg, var(--blue), #60a5fa);
-    }
-    .lc.grand::after { background: linear-gradient(90deg, rgba(37,99,235,.45), transparent); }
-
-    .lc-plant {
-      font-family: "IBM Plex Mono", monospace;
-      font-size: 0.58rem; font-weight: 600;
-      text-transform: uppercase; letter-spacing: .12em;
-      color: var(--muted); margin-bottom: 8px;
-    }
-    .lc.grand .lc-plant { color: var(--blue); }
-
-    .lc-num {
-      font-family: "IBM Plex Mono", monospace;
-      font-size: 1.6rem; font-weight: 700;
-      color: var(--text); letter-spacing: -0.03em; line-height: 1;
-      transition: transform .2s;
-    }
-    .lc.grand .lc-num { font-size: 2.1rem; color: var(--blue); }
-    .lc:hover .lc-num { transform: translateY(-1px); }
-
-    .live-meta {
-      display: flex; align-items: center; gap: 7px; margin-top: 12px;
-      font-size: 0.66rem; color: var(--muted);
-      font-family: "IBM Plex Mono", monospace;
-    }
-    .live-meta .dot-live { width: 5px; height: 5px; }
-
-    /* -- BREAKDOWN SECTION -------------------------------------------- */
-    .breakdown-section { }
-
-    /* ── Filter bar ───────────────────────────────────────── */
-    .filter-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      padding: 0;
-      box-shadow: var(--shadow);
-      margin-bottom: 16px;
-      overflow: hidden;
-    }
-
-    .filter-header {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 12px 18px;
-      border-bottom: 1px solid var(--border);
-      background: linear-gradient(90deg, var(--surface2), var(--surface));
-    }
-
-    .filter-header-left { display: flex; align-items: center; gap: 10px; }
-    .filter-title { font-family: "Syne", sans-serif; font-size: 0.78rem; font-weight: 700; color: var(--text); }
-    .slot-badge {
-      display: flex; align-items: center; gap: 5px;
-      background: var(--blue-lt); border: 1px solid var(--blue-mid);
-      border-radius: 999px; padding: 3px 11px;
-      font-size: 0.63rem; font-weight: 700;
-      color: var(--blue); font-family: "IBM Plex Mono", monospace;
-      letter-spacing: .04em;
-    }
-    :root[data-theme="dark"] .slot-badge { color: var(--blue); }
-    .slot-badge.amber {
-      background: var(--amber-lt); border-color: var(--amber-mid);
-      color: var(--amber-text);
-    }
-    :root[data-theme="dark"] .slot-badge.amber { color: var(--amber); }
-
-    .filter-body {
-      padding: 14px 18px;
-      display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
-    }
-
-    .fg {
-      display: flex; align-items: center;
-      border: 1.5px solid var(--border2); border-radius: var(--radius);
-      overflow: hidden; height: 38px; background: var(--surface);
-      transition: border-color .15s, box-shadow .15s;
-    }
-    .fg:focus-within { border-color: var(--blue-mid); box-shadow: 0 0 0 3px rgba(37,99,235,.12); }
-    .fg-lbl {
-      padding: 0 11px;
-      font-size: 0.6rem; font-weight: 700;
-      font-family: "IBM Plex Mono", monospace;
-      text-transform: uppercase; letter-spacing: .12em;
-      color: var(--muted);
-      border-right: 1.5px solid var(--border2);
-      height: 100%; display: flex; align-items: center;
-      white-space: nowrap; background: var(--surface3);
-    }
-    .fg select {
-      border: none; outline: none; background: transparent;
-      color: var(--text); font-family: "IBM Plex Mono", monospace;
-      font-size: 0.78rem; font-weight: 500;
-      padding: 0 8px 0 10px; cursor: pointer; height: 100%;
-      appearance: none; -webkit-appearance: none; min-width: 85px;
-    }
-    .fg select option { background: var(--surface); color: var(--text); }
-    .fg-chevron {
-      padding-right: 8px; color: var(--muted2);
-      pointer-events: none; display: flex; align-items: center;
-    }
-
-    .filter-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
-    .rspin {
-      display: none; width: 14px; height: 14px;
-      border: 2px solid var(--border2); border-top-color: var(--blue);
-      border-radius: 50%; animation: spin .55s linear infinite;
-    }
-    .rspin.on { display: block; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    .filter-hint {
-      font-size: 0.67rem; color: var(--muted);
-      font-family: "IBM Plex Mono", monospace;
-    }
-    .filter-hint strong { color: var(--text2); }
-
-    /* ── Stats row ─────────────────────────────────────────── */
-    .stats-bar {
-      display: flex; align-items: center; gap: 8px;
-      margin-bottom: 12px; flex-wrap: wrap;
-    }
-    .sc {
-      display: inline-flex; align-items: center; gap: 7px;
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: var(--radius-sm); padding: 5px 13px;
-      font-size: 0.68rem; color: var(--muted);
-      font-family: "IBM Plex Mono", monospace;
-      box-shadow: var(--shadow-sm);
-      transition: box-shadow .15s;
-    }
-    .sc:hover { box-shadow: var(--shadow); }
-    .sc strong { color: var(--text); font-weight: 700; }
-    .sc.green { border-color: var(--green-mid); background: var(--green-xlt); color: var(--green-dark); }
-    .sc.green strong { color: var(--green-dark); }
-    :root[data-theme="dark"] .sc.green { color: var(--green); }
-    :root[data-theme="dark"] .sc.green strong { color: var(--green); }
-    .sc.blue  { border-color: var(--blue-mid);  background: var(--blue-lt);  color: var(--blue); }
-    .sc.blue  strong { color: var(--blue-dark); }
-    :root[data-theme="dark"] .sc.blue strong { color: var(--blue); }
-    .sc.amber { border-color: var(--amber-mid); background: var(--amber-lt); color: var(--amber); }
-    .sc.amber strong { color: var(--amber-text); }
-    :root[data-theme="dark"] .sc.amber strong { color: var(--amber); }
-    .ml-auto  { margin-left: auto; }
-
-    /* ── TABLE ─────────────────────────────────────────────── */
-    .tbl-wrap {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      overflow: hidden; box-shadow: var(--shadow);
-    }
-
-    /* Column group headers */
-    .tbl-colgroup-header {
-      display: flex;
-      border-bottom: 1px solid var(--border);
-      background: var(--surface2);
-    }
-    .tcgh {
-      padding: 7px 16px;
-      font-size: 0.62rem; font-weight: 700;
-      font-family: "IBM Plex Mono", monospace;
-      text-transform: uppercase; letter-spacing: .08em;
-      color: var(--muted);
-      display: flex; align-items: center; gap: 5px;
-    }
-    .tcgh.identity { flex: 0 0 auto; min-width: 320px; border-right: 1px solid var(--border); }
-    .tcgh.today    { flex: 1; border-right: 1px solid var(--border); color: var(--blue); }
-    .tcgh.thishour { flex: 1; color: var(--amber); }
-    .tcgh-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
-
-    .tbl-scroll { max-height: 540px; overflow-y: auto; }
-    .tbl-scroll::-webkit-scrollbar { width: 5px; }
-    .tbl-scroll::-webkit-scrollbar-track { background: transparent; }
-    .tbl-scroll::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 99px; }
-
-    table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
-
-    thead th {
-      background: #1c2840;
-      color: #7a93b5;
-      padding: 11px 16px;
-      font-family: "IBM Plex Mono", monospace;
-      font-size: 0.6rem; font-weight: 600;
-      letter-spacing: .12em; text-transform: uppercase;
-      user-select: none; cursor: pointer; white-space: nowrap;
-      position: sticky; top: 0; z-index: 5;
-      border-bottom: 2px solid #253552;
-      transition: color .12s, background .12s;
-    }
-    thead th:hover { color: #c8d9ef; background: #213147; }
-    thead th.sort-asc, thead th.sort-desc { color: #60a5fa; }
-
-    /* Column grouping on thead */
-    thead th.col-identity { border-right: 1px solid #2c3f5e; text-align: left; }
-    thead th.col-today    { border-right: 1px solid #2c3f5e; color: #6fa5f5; }
-    thead th.col-thishour { color: #f5c842; }
-    thead th.col-today:hover    { background: #1e324f; color: #93c5fd; }
-    thead th.col-thishour:hover { background: #28200d; color: #fde68a; }
-
-    :root[data-theme="dark"] thead th {
-      background: #060d1b;
-      color: #8aaad0;
-      border-bottom-color: #182438;
-    }
-    :root[data-theme="dark"] thead th:hover { background: #0b1728; color: #c0d6f0; }
-    :root[data-theme="dark"] thead th.col-identity { border-right-color: #1e3050; }
-    :root[data-theme="dark"] thead th.col-today { border-right-color: #1e3050; color: #6fa5f5; }
-    :root[data-theme="dark"] thead th.col-thishour { color: #fbbf24; }
-
-    .th-inner { display: inline-flex; align-items: center; gap: 6px; }
-    .th-inner.right { float: right; }
-    .sort-arr { display: inline-flex; flex-direction: column; gap: 2px; opacity: .2; transition: opacity .12s; flex-shrink: 0; }
-    .arr-u, .arr-d { display: block; width: 0; height: 0; border-left: 3px solid transparent; border-right: 3px solid transparent; }
-    .arr-u { border-bottom: 4px solid currentColor; }
-    .arr-d { border-top:    4px solid currentColor; }
-    th.sort-asc  .sort-arr, th.sort-desc .sort-arr { opacity: 1; }
-    th.sort-asc  .arr-d { opacity: .15; }
-    th.sort-desc .arr-u { opacity: .15; }
-
-    tbody tr { border-bottom: 1px solid var(--border); transition: background .1s; }
-    tbody tr:last-child { border-bottom: none; }
-    tbody tr:nth-child(even) { background: var(--surface2); }
-    tbody tr:hover { background: var(--blue-xlt) !important; }
-    :root[data-theme="dark"] tbody tr:nth-child(even) { background: #0d1828; }
-    :root[data-theme="dark"] tbody tr:hover { background: #132038 !important; }
-
-    td { padding: 10px 16px; vertical-align: middle; }
-
-    /* Identity group */
-    td.col-proj {
-      font-family: "IBM Plex Mono", monospace;
-      font-size: 0.72rem; color: var(--blue); font-weight: 500;
-    }
-    td.col-line { font-weight: 700; color: var(--text); font-size: 0.84rem; }
-    td.col-plant {
-      font-family: "IBM Plex Mono", monospace;
-      font-size: 0.7rem; font-weight: 700;
-      color: var(--amber); letter-spacing: .03em;
-    }
-    td.col-identity-last { border-right: 2px solid var(--border2); }
-
-    /* Today group */
-    td.col-today-qty {
-      text-align: right; border-right: 1px solid var(--border);
-      position: relative;
-    }
-    td.col-today-qty .qty-num {
-      font-family: "IBM Plex Mono", monospace;
-      font-weight: 700; font-size: 0.9rem;
-      color: var(--blue-dark); position: relative; z-index: 1;
-    }
-    :root[data-theme="dark"] td.col-today-qty .qty-num { color: var(--blue); }
-    td.col-today-qty .qty-bar {
-      position: absolute; bottom: 0; left: 0;
-      height: 3px; background: linear-gradient(90deg, var(--blue-mid), transparent);
-      transition: width .5s ease;
-    }
-
-    /* This Hour group */
-    td.col-hour-qty { text-align: right; position: relative; }
-    td.col-hour-qty .qty-num {
-      font-family: "IBM Plex Mono", monospace;
-      font-weight: 700; font-size: 0.9rem;
-      color: var(--amber-text); position: relative; z-index: 1;
-    }
-    :root[data-theme="dark"] td.col-hour-qty .qty-num { color: var(--amber); }
-    td.col-hour-qty .qty-bar {
-      position: absolute; bottom: 0; left: 0;
-      height: 3px; background: linear-gradient(90deg, var(--amber-mid), transparent);
-      transition: width .5s ease;
-    }
-
-    /* Zero rows get dimmed */
-    tbody tr.zero-row td.col-today-qty .qty-num,
-    tbody tr.zero-row td.col-hour-qty  .qty-num { color: var(--muted2); }
-
-    .empty-state {
-      text-align: center; padding: 70px 20px; color: var(--muted);
-    }
-    .empty-state .icon { font-size: 2.2rem; margin-bottom: 12px; opacity: .5; }
-    .empty-state p { font-size: 0.78rem; color: var(--muted2); margin-top: 6px; }
-
-    .tbl-footer {
-      padding: 9px 16px; border-top: 1px solid var(--border);
-      font-family: "IBM Plex Mono", monospace;
-      font-size: 0.61rem; color: var(--muted);
-      display: flex; justify-content: space-between; flex-wrap: wrap; gap: 4px;
-      background: var(--surface2);
-    }
-    :root[data-theme="dark"] .lc {
-      background: linear-gradient(160deg, var(--surface2) 0%, var(--surface) 100%);
-      border-color: var(--border);
-    }
-    :root[data-theme="dark"] .lc.grand {
-      background: linear-gradient(145deg, #0f2045 0%, var(--surface) 65%);
-      border-color: var(--blue-mid);
-    }
-
-    /* ── PROGRESS + OVERLAY ───────────────────────────────── */
-    #progress-bar {
-      display: none; position: fixed; top: 0; left: 0;
-      height: 3px; width: 0;
-      background: linear-gradient(90deg, var(--blue), #60a5fa, var(--green));
-      z-index: 9999; border-radius: 0 3px 3px 0;
-      box-shadow: 0 0 10px rgba(37,99,235,.4);
-    }
-    #loading-overlay {
-      display: none; position: fixed; inset: 0;
-      background: rgba(240,242,247,.82);
-      backdrop-filter: blur(4px); z-index: 9998;
-      align-items: center; justify-content: center;
-    }
-    :root[data-theme="dark"] #loading-overlay { background: rgba(8,14,28,.82); }
-    #loading-overlay.active { display: flex; }
-    .loader-card {
-      background: var(--surface); border: 1px solid var(--border2);
-      border-radius: var(--radius-xl); padding: 28px 44px;
-      display: flex; flex-direction: column; align-items: center; gap: 14px;
-      box-shadow: var(--shadow-lg);
-      animation: popIn .2s ease-out;
-    }
-    .spinner {
-      width: 32px; height: 32px; border-radius: 50%;
-      border: 2.5px solid var(--border2); border-top-color: var(--blue);
-      animation: spin .6s linear infinite;
-    }
-    .loader-text { font-size: 0.78rem; color: var(--muted); font-family: "IBM Plex Mono", monospace; letter-spacing: .04em; }
-
-    @keyframes numBump { 0%{transform:scale(1)} 35%{transform:scale(1.09)} 100%{transform:scale(1)} }
-    .bumped { animation: numBump .3s cubic-bezier(.34,1.56,.64,1); }
-
-    @media (max-width: 1100px) {
-      .live-strip { grid-template-columns: 1fr 1fr 1fr; }
-      .lc.grand   { grid-column: span 3; }
-      .tcgh.identity { min-width: 200px; }
-    }
-    @media (max-width: 700px) {
-      .page { padding: 14px 12px 54px; }
-      .navbar { padding: 0 14px; }
-      .nb-sub, .nb-sep { display: none; }
-      .live-strip { grid-template-columns: 1fr 1fr; }
-      .lc.grand   { grid-column: span 2; }
-    }
-  </style>
-</head>
-<body>
-
-<div id="progress-bar"></div>
-<div id="loading-overlay" {% if page == "filter" %}class="active"{% endif %}>
-  <div class="loader-card">
-    <div class="spinner"></div>
-    <div class="loader-text">Loading production data…</div>
-  </div>
-</div>
-
-<!-- -- NAVBAR ------------------------------------------------------ -->
-<nav class="navbar">
-  <div class="nb-left">
-    <div class="nb-logo">
-      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-        <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>
-      </svg>
+    <div id="pdf-header" style="display:none;" class="mb-6 border-b border-slate-300 pb-4 pt-4 px-2">
+        <h1 class="text-2xl font-bold text-slate-900">Production Breakdown &mdash; {{ 'All Plants' if plant == 'ALL' else plant }}</h1>
+        <p class="text-sm text-slate-600 font-mono mt-2" id="pdf-timestamp"></p>
     </div>
-    <div>
-      <div class="nb-brand">Production Dashboard</div>
-      <div class="nb-sub">Real-time meter production data</div>
+
+    {% if page == 'dashboard' %}
+    <a href="{{ url_for('filter_page', plant='ALL') }}" class="group block bg-white dark:bg-panel border border-slate-200 dark:border-border rounded-2xl p-5 relative overflow-hidden shadow-sm hover:border-primary/50 transition-all duration-300">
+        <div class="absolute -right-32 -top-32 w-80 h-80 bg-primary/10 blur-[80px] rounded-full pointer-events-none group-hover:bg-primary/20 transition-all duration-700"></div>
+        <div class="absolute -left-32 -bottom-32 w-80 h-80 bg-emerald-500/10 blur-[80px] rounded-full pointer-events-none"></div>
+        
+        <div class="relative z-10 flex flex-col h-full gap-2">
+            <div class="flex justify-between items-start w-full">
+                <div class="flex items-center gap-2 mb-2">
+                    <div class="flex items-center justify-center w-6 h-6 rounded bg-primary/10 text-primary">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                    </div>
+                    <span class="text-xs md:text-sm uppercase tracking-widest text-slate-500 font-bold">All Plants Combined</span>
+                </div>
+                <div class="flex items-center gap-2 hidden md:flex" id="top-projects-container">
+                    <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mr-1">Top Projects:</span>
+                </div>
+            </div>
+
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+                <div>
+                    <div class="font-display text-5xl md:text-6xl font-normal text-slate-900 dark:text-white tracking-tight" id="lv-ALL" data-val="0">0</div>
+                    <div class="flex items-center gap-4 mt-2">
+                        <div class="text-xs text-slate-500 font-mono flex items-center gap-2">
+                            <span class="relative flex h-1.5 w-1.5">
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-success"></span>
+                            </span>
+                            Total Meters Today
+                        </div>
+                        <div class="text-xs font-mono font-bold text-success" id="vel-ALL"></div>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2 text-[10px] font-bold text-primary bg-primary/5 px-3 py-1.5 rounded-full border border-primary/10 group-hover:bg-primary/10 transition-colors">
+                    OPEN BREAKDOWN
+                    <svg class="w-3 h-3 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                </div>
+            </div>
+        </div>
+    </a>
+
+    <div class="bg-slate-50 dark:bg-obsidian border border-slate-200 dark:border-border rounded-xl p-3 flex flex-col md:flex-row md:items-center justify-between gap-4 min-h-[64px]">
+        <div class="flex items-center gap-3 w-full">
+            <div class="w-8 h-8 rounded-lg bg-white dark:bg-panel shadow-sm flex items-center justify-center text-amber-500 shrink-0 border border-slate-100 dark:border-border">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+            </div>
+            <div class="flex-1">
+                <h4 class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Live AI Insight</h4>
+                <p class="text-xs text-slate-700 dark:text-slate-300 leading-relaxed transition-opacity duration-500" id="dynamic-insight">Analyzing real-time production streams...</p>
+            </div>
+        </div>
     </div>
-    <div class="nb-sep"></div>
-    <div class="badge-live"><span class="dot-live"></span>LIVE</div>
-  </div>
-  <div class="nb-right">
-    <div class="nb-nav">
-      <a href="{{ url_for('dashboard') }}" class="nb-link {% if page == 'dashboard' %}active{% endif %}">Dashboard</a>
-      <a href="{{ url_for('filter_page') }}" class="nb-link {% if page == 'filter' %}active{% endif %}">Filter</a>
-      <a href="{{ url_for('graph_page') }}" class="nb-link {% if page == 'graph' %}active{% endif %}">Graph</a>
-    </div>
-    <div class="nb-date">{{ today }}</div>
-    <div class="profile-menu">
-      <button type="button" class="profile-btn" id="profile-btn" aria-label="Profile menu" aria-expanded="false">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-7 8-7s8 3 8 7"/>
-        </svg>
-      </button>
-      <div class="profile-pop" id="profile-pop">
-        <button type="button" class="pm-item" id="theme-toggle">
-          <span class="pm-item-left">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 3v2m0 14v2M3 12h2m14 0h2M5.6 5.6l1.4 1.4m10 10 1.4 1.4M5.6 18.4 7 17m10-10 1.4-1.4"/><circle cx="12" cy="12" r="4"/>
-            </svg>
-            <span>Dark Mode</span>
-          </span>
-          <span class="pm-state" id="theme-state">Off</span>
-        </button>
-        <a href="{{ url_for('logout') }}" class="pm-item danger">
-          <span class="pm-item-left">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
-            </svg>
-            <span>Logout</span>
-          </span>
+
+    <div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3">
+        {% for p in plant_names %}
+        <a href="{{ url_for('filter_page', plant=p) }}" class="block bg-white dark:bg-panel border border-slate-200 dark:border-border rounded-xl p-4 hover:border-slate-300 dark:hover:border-slate-600 hover:shadow-md transition-all duration-300 transform hover:-translate-y-0.5 group relative overflow-hidden plant-card" data-plant="{{ p }}">
+            <div class="flex justify-between items-start mb-4 relative z-10">
+                <div>
+                    <h3 class="text-sm md:text-[15px] font-bold text-slate-800 dark:text-slate-200 tracking-wider">{{ p }}</h3>
+                    <div id="spark-{{ p }}" class="mt-1 w-20 h-6">
+                        <div class="w-full h-full bg-slate-100 dark:bg-slate-800 animate-pulse rounded"></div>
+                    </div>
+                </div>
+                <div class="flex items-center gap-1" id="lh-{{ p }}" title="Active Lines (This Hour)"></div>
+            </div>
+            
+            <div class="mb-4 relative z-10 flex items-baseline gap-2">
+                <div class="font-display text-3xl md:text-4xl font-normal text-slate-900 dark:text-white tracking-tight" id="lv-{{ p }}" data-val="0">0</div>
+                <div class="text-[9px] font-mono font-bold text-success" id="vel-{{ p }}"></div>
+            </div>
+
+            <div class="relative z-10 pt-3 border-t border-slate-100 dark:border-border/50">
+                <div class="flex justify-between text-[9px] font-mono font-bold mb-1.5">
+                    <span class="text-slate-500 uppercase tracking-widest">Percentage Contribution</span>
+                    <span class="text-primary" id="share-txt-{{ p }}">--%</span>
+                </div>
+                <div class="h-1 w-full bg-slate-100 dark:bg-obsidian rounded-full overflow-hidden">
+                    <div class="h-full bg-primary rounded-full transition-all duration-1000 ease-out w-0" id="share-bar-{{ p }}"></div>
+                </div>
+            </div>
         </a>
-      </div>
+        {% endfor %}
     </div>
-  </div>
-</nav>
+    {% endif %}
 
-<!-- -- PAGE -------------------------------------------------------- -->
-<div class="page">
-
-  <!-- -- LIVE COUNTERS --------------------------------------- -->
-  {% if page == "dashboard" %}
-  <div class="live-section">
-    <div class="sec-head">
-      <div class="sec-icon green">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-      </div>
-      <span class="sec-title">Live Production Data - Today</span>
-      <span class="sec-sub">Total meters produced today · <span id="live-asof">Last updated: --</span></span>
-      <div class="sec-line"></div>
-    </div>
-
-    <div class="live-strip">
-      <!-- Grand Total -->
-      <a class="lc-link" href="{{ url_for('filter_page', plant='ALL', timefrom=timefrom, timeto=timeto, project='ALL', line='ALL') }}">
-        <div class="lc grand">
-          <div class="lc-plant">All Plants Combined</div>
-          <div class="lc-num" id="lv-ALL">—</div>
-        </div>
-      </a>
-      <!-- Per-plant -->
-      {% for p in plant_names %}
-      <a class="lc-link" href="{{ url_for('filter_page', plant=p, timefrom=timefrom, timeto=timeto, project='ALL', line='ALL') }}">
-        <div class="lc">
-          <div class="lc-plant">{{ p }}</div>
-          <div class="lc-num" id="lv-{{ p }}">—</div>
-        </div>
-      </a>
-      {% endfor %}
-    </div>
-  </div>
-
-  {% endif %}
-
-  {% if page == "filter" %}
-  <!-- -- BREAKDOWN TABLE ------------------------------------- -->
-  <div class="breakdown-section">
-    <div class="sec-head">
-      <div class="sec-icon blue">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
-      </div>
-      <span class="sec-title">{% if page == "filter" %}Filtered Data Table{% else %}Production Breakdown - Line by Line{% endif %}</span>
-      <span class="sec-sub" id="breakdown-sub">{% if page == "filter" %}All Plants - refine by plant, slot, project and line{% else %}All Plants - Today vs Current Slot{% endif %}</span>
-      <div class="sec-line"></div>
-    </div>
-
-    <form method="get" id="main-form">
-      <input type="hidden" name="date"     value="{{ selecteddate }}">
-      <input type="hidden" name="timefrom" id="hid-from" value="{{ timefrom }}">
-      <input type="hidden" name="timeto"   id="hid-to"   value="{{ timeto }}">
-
-      <div class="filter-body" style="padding: 2px 0 10px;">
-        <!-- Plant -->
-        <div class="fg">
-          <span class="fg-lbl">Plant</span>
-          <select name="plant" onchange="submitForm()">
-            <option value="ALL" {% if plant == "ALL" %}selected{% endif %}>All Plants</option>
-            {% for p in plant_names %}
-            <option value="{{ p }}" {% if p == plant %}selected{% endif %}>{{ p }}</option>
-            {% endfor %}
-          </select>
-          <span class="fg-chevron"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg></span>
+    {% if page == 'filter' %}
+    <div id="ledger-section" class="space-y-3">
+        
+        <div class="flex items-center justify-between px-1 no-pdf">
+            <h2 class="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                <span id="ledger-title">Production Breakdown &mdash; {{ 'All Plants' if plant == 'ALL' else plant }}</span>
+            </h2>
+            <div class="flex gap-2">
+                <button id="export-pdf-btn" onclick="exportPDF()" class="text-xs font-bold text-primary bg-primary/10 px-3 py-1.5 rounded-lg border border-primary/20 hover:bg-primary/20 transition-colors flex items-center gap-2">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                    Export PDF
+                </button>
+                <a href="{{ url_for('dashboard') }}" class="text-xs font-bold text-slate-500 hover:text-slate-800 dark:hover:text-white bg-slate-100 dark:bg-obsidian px-3 py-1.5 rounded-lg border border-slate-200 dark:border-border transition-colors flex items-center gap-2">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                    Dashboard
+                </a>
+            </div>
         </div>
 
-        {% set slot_start = (timefrom.split(':')[0] | int) if timefrom else 0 %}
-        <div class="fg">
-          <span class="fg-lbl">Slot</span>
-          <select id="sel-slot" onchange="submitSlotForm()" style="min-width:172px">
-            {% for h in range(8, 24) %}
-            {% set endh = (h + 1) % 24 %}
-            {% set h12 = 12 if (h % 12) == 0 else (h % 12) %}
-            {% set endh12 = 12 if (endh % 12) == 0 else (endh % 12) %}
-            <option value="{{ h }}" {% if slot_start == h %}selected{% endif %}>
-              {{ '%02d:00 %s' % (h12, 'am' if h < 12 else 'pm') }}
-              -
-              {{ '%02d:00 %s' % (endh12, 'am' if endh < 12 else 'pm') }}
-            </option>
-            {% endfor %}
-            {% for h in range(0, 8) %}
-            {% set endh = (h + 1) % 24 %}
-            {% set h12 = 12 if (h % 12) == 0 else (h % 12) %}
-            {% set endh12 = 12 if (endh % 12) == 0 else (endh % 12) %}
-            <option value="{{ h }}" {% if slot_start == h %}selected{% endif %}>
-              {{ '%02d:00 %s' % (h12, 'am' if h < 12 else 'pm') }}
-              -
-              {{ '%02d:00 %s' % (endh12, 'am' if endh < 12 else 'pm') }}
-            </option>
-            {% endfor %}
-          </select>
-          <span class="fg-chevron"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg></span>
-        </div>
+        <form method="get" id="main-form" class="bg-white dark:bg-panel border border-slate-200 dark:border-border rounded-xl p-2 flex flex-wrap gap-2 items-center no-pdf">
+            <input type="hidden" name="date" value="{{ selecteddate }}">
+            <input type="hidden" name="timefrom" id="hid-from" value="{{ timefrom }}">
+            <input type="hidden" name="timeto" id="hid-to" value="{{ timeto }}">
 
-        {% if page == "filter" %}
-        <div class="fg">
-          <span class="fg-lbl">Project</span>
-          <select id="sel-project" name="project" onchange="submitForm()" style="min-width:150px">
-            <option value="ALL" {% if project == "ALL" %}selected{% endif %}>All Projects</option>
-            {% if project and project != "ALL" %}<option value="{{ project }}" selected>{{ project }}</option>{% endif %}
-          </select>
-          <span class="fg-chevron"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg></span>
-        </div>
-        <div class="fg">
-          <span class="fg-lbl">Line</span>
-          <select id="sel-line" name="line" onchange="submitForm()" style="min-width:130px">
-            <option value="ALL" {% if line == "ALL" %}selected{% endif %}>All Lines</option>
-            {% if line and line != "ALL" %}<option value="{{ line }}" selected>{{ line }}</option>{% endif %}
-          </select>
-          <span class="fg-chevron"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg></span>
-        </div>
-        {% endif %}
+            <div class="flex items-center bg-slate-50 dark:bg-obsidian border border-slate-200 dark:border-border rounded-lg overflow-hidden focus-within:ring-1 focus-within:ring-primary">
+                <span class="px-3 text-[9px] font-bold text-slate-500 uppercase tracking-widest border-r border-slate-200 dark:border-border">Plant</span>
+                <select name="plant" onchange="submitForm()" class="bg-transparent text-xs font-mono text-slate-700 dark:text-slate-300 py-1.5 pl-3 pr-8 focus:outline-none appearance-none cursor-pointer">
+                    <option value="ALL" {% if plant == "ALL" %}selected{% endif %} class="dark:bg-panel">All Plants</option>
+                    {% for p in plant_names %}
+                    <option value="{{ p }}" {% if p == plant %}selected{% endif %} class="dark:bg-panel">{{ p }}</option>
+                    {% endfor %}
+                </select>
+            </div>
 
-        <div class="rspin" id="ref-spin"></div>
-      </div>
-    </form>
+            {% set slot_start = (timefrom.split(':')[0] | int) if timefrom else 0 %}
+            <div class="flex items-center bg-slate-50 dark:bg-obsidian border border-slate-200 dark:border-border rounded-lg overflow-hidden focus-within:ring-1 focus-within:ring-primary">
+                <span class="px-3 text-[9px] font-bold text-slate-500 uppercase tracking-widest border-r border-slate-200 dark:border-border">Slot</span>
+                <select id="sel-slot" onchange="submitSlotForm()" class="bg-transparent text-xs font-mono text-slate-700 dark:text-slate-300 py-1.5 pl-3 pr-8 focus:outline-none appearance-none cursor-pointer">
+                    {% for h in range(8, 24) %}
+                    {% set endh = (h + 1) % 24 %}
+                    <option value="{{ h }}" {% if slot_start == h %}selected{% endif %} class="dark:bg-panel">{{ '%02d:00' % h }} - {{ '%02d:00' % endh }}</option>
+                    {% endfor %}
+                    {% for h in range(0, 8) %}
+                    {% set endh = (h + 1) % 24 %}
+                    <option value="{{ h }}" {% if slot_start == h %}selected{% endif %} class="dark:bg-panel">{{ '%02d:00' % h }} - {{ '%02d:00' % endh }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="ml-auto flex items-center gap-4">
+                <button type="button" onclick="toggleDensity()" class="text-slate-400 hover:text-primary transition-colors" title="Toggle Table Density">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                </button>
+                <div class="px-4 flex gap-6 text-xs font-mono text-slate-500 border-l border-slate-200 dark:border-border">
+                    <div class="flex flex-col"><span class="text-[8px] uppercase tracking-widest opacity-70">Active Lines</span> <span class="text-slate-800 dark:text-slate-200 text-xs" id="stat-lines">0</span></div>
+                    <div class="flex flex-col"><span class="text-[8px] uppercase tracking-widest opacity-70">Total Production</span> <span class="text-primary font-display font-medium text-sm" id="stat-today" data-val="0">0</span></div>
+                </div>
+            </div>
+        </form>
 
-    <!-- Stats bar -->
-    <div class="stats-bar">
-      <div class="sc">Lines <strong id="stat-lines">{{ rows|length }}</strong></div>
-      <div class="sc blue">Today Total (8 AM+) <strong id="stat-today">{{ rows|sum(attribute='TodayQty') if rows and rows[0] is defined and 'TodayQty' in rows[0] else rows|sum(attribute='ProdQty') }}</strong> m</div>
-      <div class="sc amber">Slot Total <strong id="stat-hour">—</strong> m</div>
-      <div class="sc" id="sort-chip" style="display:none">Sorted <strong id="sort-label"></strong></div>
+        <div class="bg-white dark:bg-panel border border-slate-200 dark:border-border rounded-xl shadow-sm overflow-hidden">
+            <div class="hover-scroll max-h-[500px]" id="table-scroll-container">
+                <table class="w-full text-left border-collapse" id="prod-table">
+                    <thead class="bg-slate-50 dark:bg-obsidian/50 sticky top-0 z-10 backdrop-blur-sm border-b border-slate-200 dark:border-border select-none">
+                        <tr>
+                            <th onclick="handleSort('proj')" class="py-2.5 px-4 text-[9px] font-bold uppercase tracking-widest text-slate-500 border-r border-slate-200 dark:border-border cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors group">
+                                <div class="flex items-center gap-1">Project <span class="sort-icon w-3 h-3 text-slate-300 dark:text-slate-600" id="sort-icon-proj"></span></div>
+                            </th>
+                            <th onclick="handleSort('line')" class="py-2.5 px-4 text-[9px] font-bold uppercase tracking-widest text-slate-500 border-r border-slate-200 dark:border-border cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors group">
+                                <div class="flex items-center gap-1">Line <span class="sort-icon w-3 h-3 text-slate-300 dark:text-slate-600" id="sort-icon-line"></span></div>
+                            </th>
+                            <th id="th-plant-col" onclick="handleSort('plant')" class="py-2.5 px-4 text-[9px] font-bold uppercase tracking-widest text-slate-500 border-r border-slate-200 dark:border-border cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors group" style="{% if plant != 'ALL' %}display: none;{% endif %}">
+                                <div class="flex items-center gap-1">Plant <span class="sort-icon w-3 h-3 text-slate-300 dark:text-slate-600" id="sort-icon-plant"></span></div>
+                            </th>
+                            <th onclick="handleSort('today')" class="py-2.5 px-4 text-[9px] font-bold uppercase tracking-widest text-primary border-r border-slate-200 dark:border-border text-right cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors group">
+                                <div class="flex items-center justify-end gap-1"><span class="sort-icon w-3 h-3 text-slate-300 dark:text-slate-600" id="sort-icon-today"></span> Today's VOL (8AM+)</div>
+                            </th>
+                            <th onclick="handleSort('hour')" class="py-2.5 px-4 text-[9px] font-bold uppercase tracking-widest text-warning text-right cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors group">
+                                <div class="flex items-center justify-end gap-1"><span class="sort-icon w-3 h-3 text-slate-300 dark:text-slate-600" id="sort-icon-hour"></span> <span id="th-slot-lbl">{{ timefrom }} - {{ timeto }}</span> Vol</div>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body" class="font-mono text-xs divide-y divide-slate-100 dark:divide-border/50">
+                        {% for i in range(5) %}
+                        <tr>
+                            <td class="py-2.5 px-4"><div class="h-4 bg-slate-100 dark:bg-slate-800 rounded animate-pulse w-24"></div></td>
+                            <td class="py-2.5 px-4"><div class="h-4 bg-slate-100 dark:bg-slate-800 rounded animate-pulse w-16"></div></td>
+                            {% if plant == 'ALL' %}<td class="py-2.5 px-4"><div class="h-4 bg-slate-100 dark:bg-slate-800 rounded animate-pulse w-12"></div></td>{% endif %}
+                            <td class="py-2.5 px-4"><div class="h-4 bg-slate-100 dark:bg-slate-800 rounded animate-pulse w-10 ml-auto"></div></td>
+                            <td class="py-2.5 px-4"><div class="h-4 bg-slate-100 dark:bg-slate-800 rounded animate-pulse w-8 ml-auto"></div></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
+    {% endif %}
 
-    <!-- Table -->
-    <div class="tbl-wrap">
-      <div class="tbl-scroll">
-        <table id="prod-table">
-          <thead>
-          <tr id="thead-row">
-            <th data-col="0" data-type="str" class="col-identity">
-              <span class="th-inner">Project <span class="sort-arr"><span class="arr-u"></span><span class="arr-d"></span></span></span>
-            </th>
-            <th data-col="1" data-type="str" class="col-identity">
-              <span class="th-inner">Line <span class="sort-arr"><span class="arr-u"></span><span class="arr-d"></span></span></span>
-            </th>
-            <th data-col="2" data-type="str" class="col-identity col-identity-last" id="th-plant" {% if plant != "ALL" %}style="display:none"{% endif %}>
-              <span class="th-inner">Plant <span class="sort-arr"><span class="arr-u"></span><span class="arr-d"></span></span></span>
-            </th>
-            <th data-col="3" data-type="num" class="col-today">
-              <span class="th-inner right">TODAY 8 AM+ <span class="sort-arr"><span class="arr-u"></span><span class="arr-d"></span></span></span>
-            </th>
-            <th data-col="4" data-type="num" class="col-thishour">
-              <span class="th-inner right"><span id="th-slot-lbl">{{ timefrom }} - {{ timeto }}</span> <span class="sort-arr"><span class="arr-u"></span><span class="arr-d"></span></span></span>
-            </th>
-          </tr>
-          </thead>
-          <tbody id="table-body">
-            <tr><td colspan="5"><div class="empty-state"><div class="icon">...</div><p>Loading production data...</p></div></td></tr>
-          </tbody>
-        </table>
-      </div>
+</div>
+{% endblock %}
 
-      <div class="tbl-footer">
-        <span>Click any column header to sort · click again to reverse direction</span>
-        <span>MTR Meter Production</span>
-      </div>
-    </div>
-  </div>
-  {% endif %}
-
-</div><!-- /page -->
-
-<!-- -- SCRIPTS ------------------------------------------------------- -->
+{% block scripts %}
 <script>
-// -- Helpers ---------------------------------------------------------
-const $  = id => document.getElementById(id);
-const AUTO_REFRESH_MS = 30000;
-const fmt = n => (typeof n === "number" ? n : 0).toLocaleString("en-IN");
+    const PAGE_TYPE = "{{ page }}"; 
+    const ACTIVE_PLANT = "{{ plant }}";
+    const fmt = n => (typeof n === "number" ? n : 0).toLocaleString("en-IN");
 
-function bump(el) {
-  if (!el) return;
-  el.classList.remove("bumped"); void el.offsetWidth; el.classList.add("bumped");
-}
+    let globalRows = [];
+    let sortKey = (ACTIVE_PLANT === 'ALL') ? 'plant' : 'line';
+    let sortDir = 1;
+    let isCompact = localStorage.getItem('pd_table_density') === 'compact';
 
-// -- Current hour slot ------------------------------------------------
-function currentSlot() {
-  const h = new Date().getHours();
-  const from = String(h).padStart(2,"0") + ":00";
-  const to   = String((h+1)%24).padStart(2,"0") + ":00";
-  return { from, to, h };
-}
+    const upArrowSVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 15l-6-6-6 6"/></svg>`;
+    const downArrowSVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>`;
 
-function fmtHour(h) {
-  const h12 = (h % 12) === 0 ? 12 : (h % 12);
-  const suffix = h < 12 ? "am" : "pm";
-  return String(h12).padStart(2, "0") + ":00 " + suffix;
-}
+    // --- Direct PDF Export (html2pdf) ---
+    async function exportPDF() {
+        const wrapper = document.getElementById('pdf-wrapper');
+        const btn = document.getElementById('export-pdf-btn');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = `<svg class="animate-spin w-3.5 h-3.5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Generating...`;
 
-function updateSlotBadge() {
-  const curSlotLbl = $("cur-slot-lbl");
-  if (!curSlotLbl) return;
-  const { h } = currentSlot();
-  curSlotLbl.textContent = fmtHour(h) + " - " + fmtHour((h+1)%24);
-}
-updateSlotBadge();
-setInterval(updateSlotBadge, 60000);
+        // 1. Force Light Mode & Show Print Header
+        const html = document.documentElement;
+        const wasDark = html.classList.contains('dark');
+        if (wasDark) html.classList.remove('dark');
 
-// -- Hour select controls ----------------------------------------------
-const selSlot  = $("sel-slot");
-const hidFrom  = $("hid-from");
-const hidTo    = $("hid-to");
-const mainForm = $("main-form");
+        document.getElementById('pdf-header').style.display = 'block';
+        document.querySelectorAll('.no-pdf').forEach(el => el.style.display = 'none');
 
-function toSlotLabel(from, to) {
-  const fromHour = parseInt(from, 10);
-  const toHour = parseInt(to, 10);
-  if (Number.isNaN(fromHour) || Number.isNaN(toHour)) return `${from} - ${to}`;
-  return `${fmtHour(fromHour)} - ${fmtHour(toHour)}`;
-}
+        // 2. Expand Table (Remove scroll so entire table prints)
+        const tblCont = document.getElementById('table-scroll-container');
+        if (tblCont) tblCont.classList.remove('max-h-[500px]', 'overflow-y-auto');
 
-function fmtHourCompact(h) {
-  const h12 = (h % 12) === 0 ? 12 : (h % 12);
-  const suffix = h < 12 ? "AM" : "PM";
-  return `${h12} ${suffix}`;
-}
+        // 3. Set Dynamic Timestamp
+        const now = new Date();
+        const dateStr = now.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+        const timeStr = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
+        document.getElementById('pdf-timestamp').innerHTML = `<strong>Report up to:</strong> ${dateStr}, ${timeStr}`;
 
-function toSlotHeaderLabel(from, to) {
-  const fromHour = parseInt(from, 10);
-  const toHour = parseInt(to, 10);
-  if (Number.isNaN(fromHour) || Number.isNaN(toHour)) return `${from} - ${to}`;
-  return `${fmtHourCompact(fromHour)} - ${fmtHourCompact(toHour)}`;
-}
+        // Wait for DOM
+        await new Promise(r => setTimeout(r, 300));
 
-function syncSlotToHidden() {
-  if (!selSlot || !hidFrom || !hidTo) return;
-  const h = parseInt(selSlot.value, 10);
-  if (Number.isNaN(h)) return;
-  hidFrom.value = String(h).padStart(2, "0") + ":00";
-  hidTo.value = String((h + 1) % 24).padStart(2, "0") + ":00";
-}
+        // 4. Generate PDF
+        const opt = {
+            margin:       0.4,
+            filename:     `Production_Breakdown_${ACTIVE_PLANT}_${new Date().getTime()}.pdf`,
+            image:        { type: 'jpeg', quality: 1 },
+            html2canvas:  { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
+            jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+        };
 
-function submitSlotForm() {
-  syncSlotToHidden();
-  submitForm();
-}
+        try { await html2pdf().set(opt).from(wrapper).save(); } 
+        catch (e) { console.error("PDF Generation Error", e); }
 
-function submitForm() {
-  showLoading();
-  mainForm.submit();
-}
-syncSlotToHidden();
-
-// -- Progress bar + overlay --------------------------------------------
-const overlay = $("loading-overlay");
-const bar     = $("progress-bar");
-let bw=0, bt=null;
-const isFilterPage = "{{ page }}" === "filter";
-let filterFirstLoadPending = isFilterPage;
-let tableSpinFirstLoad = true;
-
-function startBar() {
-  bar.style.transition=""; bar.style.width="0"; bar.style.display="block";
-  bw=0; clearInterval(bt);
-  bt = setInterval(() => { bw += bw<30?5:bw<65?2:0.3; bar.style.width=bw+"%"; if(bw>=85) clearInterval(bt); }, 80);
-}
-function showLoading() { overlay.classList.add("active"); startBar(); }
-
-function hideLoading() {
-  clearInterval(bt);
-  bar.style.transition="width .15s";
-  bar.style.width="100%";
-  setTimeout(() => {
-    bar.style.transition="opacity .3s";
-    bar.style.opacity="0";
-    setTimeout(() => {
-      bar.style.display="none";
-      bar.style.opacity="";
-      overlay.classList.remove("active");
-    }, 300);
-  }, 350);
-}
-
-if (isFilterPage) startBar();
-
-window.addEventListener("pageshow", () => {
-  if (isFilterPage) return;
-  hideLoading();
-});
-
-// -- Sort --------------------------------------------------------------
-let sortCol = ("{{ page }}" === "filter" ? ("{{ plant }}" === "ALL" ? 2 : 1) : -1), sortDir = 1;
-
-function bindSort() {
-  const tbl     = $("prod-table");
-  if (!tbl) return;
-  const tbody   = $("table-body");
-  const headers = Array.from(tbl.querySelectorAll("thead th"));
-  const colNames = headers.map(th => th.querySelector(".th-inner").childNodes[0].textContent.trim());
-
-  headers.forEach((th, i) => {
-    th.onclick = () => {
-      const rows = Array.from(tbody.querySelectorAll("tr"));
-      if (!rows.length || rows[0].cells.length <= 1) return;
-      sortDir = sortCol===i ? sortDir*-1 : 1; sortCol = i;
-      rows.sort((a,b) => {
-        const av = cv(a.cells[i], th.dataset.type);
-        const bv = cv(b.cells[i], th.dataset.type);
-        return av<bv ? -sortDir : av>bv ? sortDir : 0;
-      });
-      rows.forEach(r => tbody.appendChild(r));
-      headers.forEach(h => h.classList.remove("sort-asc","sort-desc"));
-      th.classList.add(sortDir===1?"sort-asc":"sort-desc");
-      $("sort-label").textContent = colNames[i] + (sortDir === 1 ? " asc" : " desc");
-      $("sort-chip").style.display = "inline-flex";
-    };
-  });
-}
-
-function cv(td, type) {
-  const txt = td ? td.textContent.trim() : "";
-  if (type==="num") return parseFloat(txt.replace(/,/g,"")) || 0;
-  return txt.toLowerCase();
-}
-
-// -- Live counters -----------------------------------------------------
-async function fetchLive() {
-  try {
-    const r = await fetch("/api/live_total?plant=ALL", { cache:"no-store" });
-    if (!r.ok) return;
-    const d = await r.json();
-    const pt = d.plant_totals || {};
-
-    // ALL
-    const totEl = $("lv-ALL");
-    if (totEl) {
-      const nv = d.total || 0;
-      const ns = fmt(nv);
-      if (totEl.textContent !== ns) { totEl.textContent = ns; bump(totEl); }
+        // 5. Restore UI & Dark Mode
+        document.getElementById('pdf-header').style.display = 'none';
+        document.querySelectorAll('.no-pdf').forEach(el => el.style.display = '');
+        if (tblCont) tblCont.classList.add('max-h-[500px]', 'overflow-y-auto');
+        if (wasDark) html.classList.add('dark');
+        btn.innerHTML = originalText;
     }
 
-    // per plant
-    Object.entries(pt).forEach(([k,v]) => {
-      const el  = $("lv-" + k);
-      if (!el) return;
-      const ns = fmt(v);
-      if (el.textContent !== ns) { el.textContent = ns; bump(el); }
-    });
 
-    if ($("live-asof")) {
-      $("live-asof").textContent = "Last updated: " + (d.as_of||"").replace("T"," ");
-    }
-  } catch(e) { console.warn("live error:", e); }
-}
-
-// -- Breakdown table ---------------------------------------------------
-async function fetchTable() {
-  const spin = $("ref-spin");
-  if (spin && tableSpinFirstLoad) spin.classList.add("on");
-  try {
-    const params = new URLSearchParams(window.location.search);
-    const plant   = params.get("plant") || "{{ plant }}" || "GPIL-2";
-    const from    = params.get("timefrom") || currentSlot().from;
-    const to      = params.get("timeto")   || currentSlot().to;
-    const project = params.get("project") || "{{ project|default('ALL') }}";
-    const line    = params.get("line") || "{{ line|default('ALL') }}";
-
-    // Fetch both: today-full and selected-slot
-    const [rFull, rSlot] = await Promise.all([
-      fetch(`/api/breakdown?plant=${encodeURIComponent(plant)}&timefrom=08%3A00&timeto=23%3A59`, {cache:"no-store"}),
-      fetch(`/api/breakdown?plant=${encodeURIComponent(plant)}&timefrom=${encodeURIComponent(from)}&timeto=${encodeURIComponent(to)}`, {cache:"no-store"}),
-    ]);
-
-    if (!rFull.ok || !rSlot.ok) return;
-    const dFull = await rFull.json();
-    const dSlot = await rSlot.json();
-
-    // Build maps: "ProjCode|Line|Plant" => qty
-    const makeKey = r => `${r.ProjCode}||${r.Line}||${r.Plant||""}`;
-    const fullMap = {}, slotMap = {};
-    (dFull.rows || []).forEach(r => { const k=makeKey(r); fullMap[k]=(fullMap[k]||0)+r.ProdQty; });
-    (dSlot.rows || []).forEach(r => { const k=makeKey(r); slotMap[k]=(slotMap[k]||0)+r.ProdQty; });
-
-    // Merge all keys
-    const allKeys = new Set([...Object.keys(fullMap), ...Object.keys(slotMap)]);
-    const rows = [];
-    allKeys.forEach(k => {
-      const [proj, line, pl] = k.split("||");
-      rows.push({ proj, line, plant: pl, today: fullMap[k]||0, hour: slotMap[k]||0 });
-    });
-    rows.sort((a,b) => (a.line > b.line ? 1 : a.line < b.line ? -1 : a.proj > b.proj ? 1 : -1));
-
-    const selProject = $("sel-project");
-    const selLine = $("sel-line");
-    if (selProject) {
-      const projSet = [...new Set(rows.map(r => r.proj))].sort((a,b) => a.localeCompare(b));
-      selProject.innerHTML = ['<option value="ALL">All Projects</option>']
-        .concat(projSet.map(p => `<option value="${p}">${p}</option>`))
-        .join("");
-      selProject.value = projSet.includes(project) ? project : "ALL";
-    }
-    if (selLine) {
-      const pool = project === "ALL" ? rows : rows.filter(r => r.proj === project);
-      const lineSet = [...new Set(pool.map(r => r.line))].sort((a,b) => a.localeCompare(b));
-      selLine.innerHTML = ['<option value="ALL">All Lines</option>']
-        .concat(lineSet.map(l => `<option value="${l}">${l}</option>`))
-        .join("");
-      selLine.value = lineSet.includes(line) ? line : "ALL";
+    function currentSlot() {
+        const h = new Date().getHours();
+        const from = String(h).padStart(2,"0") + ":00";
+        const to = String((h+1)%24).padStart(2,"0") + ":00";
+        return { h, from, to };
     }
 
-    const rowsFiltered = rows.filter(r =>
-      (project === "ALL" || r.proj === project) &&
-      (line === "ALL" || r.line === line)
-    );
-
-    const showPlant = plant === "ALL";
-    const maxToday  = rowsFiltered.reduce((m,r) => Math.max(m, r.today), 1);
-    const maxHour   = rowsFiltered.reduce((m,r) => Math.max(m, r.hour),  1);
-    const totalToday = rowsFiltered.reduce((s,r) => s+r.today, 0);
-    const totalHour  = rowsFiltered.reduce((s,r) => s+r.hour,  0);
-
-    // Update stats
-    $("stat-lines").textContent = rowsFiltered.length;
-    $("stat-today").textContent = fmt(totalToday);
-    $("stat-hour").textContent  = fmt(totalHour);
-
-    // Update slot header
-    const slotLbl = toSlotLabel(from, to);
-    const slotHeadLbl = toSlotHeaderLabel(from, to);
-    if ($("th-slot-lbl")) $("th-slot-lbl").textContent = slotHeadLbl;
-    if ($("fi-plant")) $("fi-plant").textContent = plant;
-    if ($("fi-time"))  $("fi-time").textContent  = slotLbl;
-
-    // Show/hide plant column
-    const thPlant = $("th-plant");
-    if (thPlant) thPlant.style.display = showPlant ? "" : "none";
-
-    // Render tbody
-    const tbody = $("table-body");
-    if (!rowsFiltered.length) {
-      const cols = showPlant ? 5 : 4;
-      tbody.innerHTML = `<tr><td colspan="${cols}"><div class="empty-state"><div class="icon">--</div><p>No production data for the selected filters.</p></div></td></tr>`;
-    } else {
-      tbody.innerHTML = rowsFiltered.map(r => {
-        const pToday = Math.round((r.today/maxToday)*100);
-        const pHour  = Math.round((r.hour/maxHour)*100);
-        const zero   = r.today===0 && r.hour===0 ? " zero-row" : "";
-        return `<tr class="${zero}">
-          <td class="col-proj">${r.proj}</td>
-          <td class="col-line">${r.line}</td>
-          ${showPlant ? `<td class="col-plant col-identity-last">${r.plant}</td>` : `<td class="col-identity-last" style="display:none"></td>`}
-          <td class="col-today-qty"><span class="qty-num">${fmt(r.today)}</span><div class="qty-bar" style="width:${pToday}%"></div></td>
-          <td class="col-hour-qty"><span class="qty-num">${fmt(r.hour)}</span><div class="qty-bar" style="width:${pHour}%"></div></td>
-        </tr>`;
-      }).join("");
+    function syncSlotToHidden() {
+        const selSlot = document.getElementById("sel-slot");
+        if (!selSlot) return;
+        const h = parseInt(selSlot.value, 10);
+        const fromStr = String(h).padStart(2,"0") + ":00";
+        const toStr = String((h+1)%24).padStart(2,"0") + ":00";
+        document.getElementById("hid-from").value = fromStr;
+        document.getElementById("hid-to").value = toStr;
+        const slotLbl = document.getElementById("th-slot-lbl");
+        if (slotLbl) slotLbl.innerText = `${fromStr} - ${toStr}`;
     }
 
-    // Update breakdown sub-heading
-    if ($("breakdown-sub")) {
-      $("breakdown-sub").textContent = `${plant} · Today vs ${slotLbl}`;
+    function submitSlotForm() { syncSlotToHidden(); document.getElementById("main-form").submit(); }
+    function submitForm() { document.getElementById('progress-bar').style.width = '50%'; document.getElementById("main-form").submit(); }
+
+    function handleSort(key) {
+        if (sortKey === key) sortDir *= -1;
+        else { sortKey = key; sortDir = 1; }
+        if (PAGE_TYPE === 'filter') renderTable();
     }
 
-    bindSort();
-    if (sortCol >= 0) {
-      const targetCol = sortCol;
-      const targetDir = sortDir;
-      const headers = Array.from($("prod-table").querySelectorAll("thead th"));
-      const th = headers[targetCol];
-      if (th && typeof th.onclick === "function") {
-        sortCol = -1;
-        sortDir = 1;
-        th.onclick(); // apply asc for the same column
-        if (targetDir === -1) th.onclick(); // then flip to desc if needed
-      }
+    function toggleDensity() {
+        isCompact = !isCompact;
+        localStorage.setItem('pd_table_density', isCompact ? 'compact' : 'comfortable');
+        renderTable();
     }
-  } catch(e) { console.warn("table error:", e); }
-  finally {
-    if (spin && tableSpinFirstLoad) {
-      spin.classList.remove("on");
-      tableSpinFirstLoad = false;
-    }
-    if (filterFirstLoadPending) {
-      hideLoading();
-      filterFirstLoadPending = false;
-    }
-  }
-}
 
-// -- Boot --------------------------------------------------------------
-bindSort();
-fetchLive();
-if (isFilterPage) {
-  fetchTable();
-}
-setInterval(() => {
-  fetchLive();
-  if (isFilterPage) fetchTable();
-}, AUTO_REFRESH_MS);
+    function updateSortIcons() {
+        document.querySelectorAll('.sort-icon').forEach(icon => {
+            icon.innerHTML = '';
+            icon.classList.remove('text-primary');
+            icon.classList.add('text-slate-300', 'dark:text-slate-600');
+        });
+        const activeIcon = document.getElementById(`sort-icon-${sortKey}`);
+        if (activeIcon) {
+            activeIcon.innerHTML = sortDir === 1 ? upArrowSVG : downArrowSVG;
+            activeIcon.classList.remove('text-slate-300', 'dark:text-slate-600');
+            activeIcon.classList.add('text-primary');
+        }
+    }
+
+    async function fetchDashboardInsights() {
+        if (PAGE_TYPE !== 'dashboard') return;
+        try {
+            const { from, to } = currentSlot();
+            const [resToday, resSlot] = await Promise.all([
+                fetch(`/api/breakdown?plant=ALL&timefrom=08:00&timeto=23:59`, { cache: "no-store" }),
+                fetch(`/api/breakdown?plant=ALL&timefrom=${from}&timeto=${to}`, { cache: "no-store" })
+            ]);
+            const dataToday = await resToday.json();
+            const dataSlot = await resSlot.json();
+            
+            const rowsToday = dataToday.rows || [];
+            const rowsSlot = dataSlot.rows || [];
+
+            // ==========================================
+            // AI INSIGHTS GENERATION ENGINE (20 Variations)
+            // ==========================================
+            const insightsList = [];
+            const totalToday = rowsToday.reduce((sum, r) => sum + r.ProdQty, 0);
+            const globalVel = rowsSlot.reduce((sum, r) => sum + r.ProdQty, 0);
+
+            if (totalToday > 0) {
+                const projSlot = {}, projToday = {}, plantSlot = {}, plantToday = {}, lineSlot = {}, lineToday = {};
+                const plantProjSet = {}, linesOnProj = {}, activePlants = new Set();
+
+                rowsToday.forEach(r => {
+                    projToday[r.ProjCode] = (projToday[r.ProjCode] || 0) + r.ProdQty;
+                    plantToday[r.Plant] = (plantToday[r.Plant] || 0) + r.ProdQty;
+                    const lKey = `${r.Plant} - ${r.Line}`;
+                    lineToday[lKey] = { val: (lineToday[lKey]?.val || 0) + r.ProdQty, name: r.Line, plant: r.Plant };
+                });
+
+                rowsSlot.forEach(r => {
+                    if (r.ProdQty > 0) {
+                        projSlot[r.ProjCode] = (projSlot[r.ProjCode] || 0) + r.ProdQty;
+                        plantSlot[r.Plant] = (plantSlot[r.Plant] || 0) + r.ProdQty;
+                        const lKey = `${r.Plant} - ${r.Line}`;
+                        lineSlot[lKey] = { val: (lineSlot[lKey]?.val || 0) + r.ProdQty, name: r.Line, plant: r.Plant };
+
+                        plantProjSet[r.Plant] = plantProjSet[r.Plant] || new Set();
+                        plantProjSet[r.Plant].add(r.ProjCode);
+
+                        linesOnProj[r.ProjCode] = linesOnProj[r.ProjCode] || new Set();
+                        linesOnProj[r.ProjCode].add(lKey);
+
+                        activePlants.add(r.Plant);
+                    }
+                });
+
+                const activeLinesCount = Object.keys(lineSlot).length;
+                const totalUniqueLinesToday = Object.keys(lineToday).length;
+
+                const getTop = (obj) => Object.entries(obj).reduce((a, b) => a[1] > b[1] ? a : b, ['', 0]);
+                const getTopObj = (obj) => Object.values(obj).reduce((a, b) => a.val > b.val ? a : b, {val:0});
+
+                const [topProjHour, topProjHourVol] = getTop(projSlot);
+                const [topProjToday, topProjTodayVol] = getTop(projToday);
+                const [topPlantHour, topPlantHourVol] = getTop(plantSlot);
+                const [topPlantToday, topPlantTodayVol] = getTop(plantToday);
+
+                const topLineTodayObj = getTopObj(lineToday);
+                const topLineHourObj = getTopObj(lineSlot);
+
+                // 1. Forecast Insight
+                const now = new Date();
+                let endOfShift = new Date(now);
+                if (now.getHours() >= 8) endOfShift.setDate(now.getDate() + 1);
+                endOfShift.setHours(8, 0, 0, 0);
+                const hrsRemaining = Math.max(0, (endOfShift - now) / (1000 * 60 * 60));
+                if (globalVel > 0) {
+                    insightsList.push({ text: `At our current production velocity of <strong class="text-slate-900 dark:text-white">${fmt(globalVel)} meters/hr</strong>, we are projected to hit <strong class="text-primary font-mono">${fmt(Math.round(totalToday + (globalVel * hrsRemaining)))} total meters</strong> by shift end.` });
+                }
+
+                // 2. Anomaly Insight
+                const anomalousLines = Object.keys(lineToday).filter(k => !lineSlot[k]);
+                if (anomalousLines.length > 0) {
+                    insightsList.push({ text: `<span class="text-red-500 font-bold">Anomaly Detected:</span> <strong>${anomalousLines.length} line(s)</strong> (including ${anomalousLines[0]}) have reported 0 production this hour after running earlier today.` });
+                }
+
+                // 3. Surge Insight
+                if (topProjHourVol > 0 && globalVel > 0) {
+                    insightsList.push({ text: `<span class="text-success font-bold">Surge Alert:</span> Project <strong>${topProjHour}</strong> is moving fast, accounting for <strong class="text-primary font-mono">${Math.round((topProjHourVol / globalVel) * 100)}%</strong> of all production this hour.` });
+                }
+
+                // 4. Top Plant Hour
+                if (topPlantHourVol > 0 && globalVel > 0) {
+                    insightsList.push({ text: `<strong>${topPlantHour}</strong> is carrying the load this hour, contributing <strong class="text-primary font-mono">${Math.round((topPlantHourVol / globalVel) * 100)}%</strong> of our live production.` });
+                }
+
+                // 5. Active Lines Overall
+                if (activeLinesCount > 0) {
+                    insightsList.push({ text: `We currently have <strong>${activeLinesCount} lines</strong> actively producing meters across our facilities this hour.` });
+                }
+
+                // 6. Top Line Today
+                if (topLineTodayObj.val > 0) {
+                    insightsList.push({ text: `<strong>Line ${topLineTodayObj.name}</strong> at <strong>${topLineTodayObj.plant}</strong> is our top performer today with <strong class="text-primary font-mono">${fmt(topLineTodayObj.val)} meters</strong> produced.` });
+                }
+
+                // 7. Top Line Hour
+                if (topLineHourObj.val > 0) {
+                    insightsList.push({ text: `<strong>Line ${topLineHourObj.name}</strong> at <strong>${topLineHourObj.plant}</strong> is leading the charge this hour with <strong class="text-primary font-mono">${fmt(topLineHourObj.val)} meters</strong>.` });
+                }
+
+                // 8. Top Project Today
+                if (topProjTodayVol > 0 && totalToday > 0) {
+                    insightsList.push({ text: `Project <strong>${topProjToday}</strong> dominates our daily volume, making up <strong class="text-primary font-mono">${Math.round((topProjTodayVol / totalToday) * 100)}%</strong> of all production today.` });
+                }
+
+                // 9. Top Plant Today
+                if (topPlantTodayVol > 0 && totalToday > 0) {
+                    insightsList.push({ text: `<strong>${topPlantToday}</strong> has produced the most meters today, accounting for <strong class="text-primary font-mono">${Math.round((topPlantTodayVol / totalToday) * 100)}%</strong> of our total volume.` });
+                }
+
+                // 10. Milestone Approaching
+                const nextMilestone = Math.ceil((totalToday + 1) / 10000) * 10000;
+                const diff = nextMilestone - totalToday;
+                if (diff > 0 && diff < 5000) {
+                    insightsList.push({ text: `We are only <strong class="text-success font-mono">${fmt(diff)} meters</strong> away from hitting our next <strong>${fmt(nextMilestone)}-meter</strong> production milestone!` });
+                }
+
+                // 11. Average Line Output
+                if (activeLinesCount > 0 && globalVel > 0) {
+                    insightsList.push({ text: `Our active lines are currently averaging <strong class="text-slate-900 dark:text-white">${fmt(Math.round(globalVel / activeLinesCount))} meters per hour</strong>.` });
+                }
+
+                // 12. Plant Status
+                const totalPlantsToday = new Set(rowsToday.map(r=>r.Plant)).size;
+                if (activePlants.size === totalPlantsToday && activePlants.size > 1) {
+                    insightsList.push({ text: `All plants are online! We have production flowing seamlessly from every facility this hour.` });
+                }
+
+                // 13. Time Context
+                const timeStr = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                insightsList.push({ text: `As of <strong>${timeStr}</strong>, our total production stands at a solid <strong class="text-primary font-mono">${fmt(totalToday)} meters</strong>.` });
+
+                // 14. Variety/Diversity
+                const uniqueProjsSlot = Object.keys(projSlot).length;
+                if (uniqueProjsSlot > 1) {
+                    insightsList.push({ text: `Our production floor is currently manufacturing <strong>${uniqueProjsSlot} unique meter models</strong> simultaneously.` });
+                }
+
+                // 15. Specific Project Focus
+                if (topProjHour && linesOnProj[topProjHour]) {
+                    insightsList.push({ text: `We are currently focusing heavily on <strong>${topProjHour}</strong>, with <strong>${linesOnProj[topProjHour].size} active lines</strong> manufacturing it right now.` });
+                }
+
+                // 16. Steady Production
+                if (globalVel > 0) {
+                    insightsList.push({ text: `Production is steady. We've successfully produced <strong class="text-primary font-mono">${fmt(globalVel)} meters</strong> in the last hour across <strong>${activePlants.size} active plants</strong>.` });
+                }
+
+                // 17. Diverse Plant
+                let mostDiversePlant = "", maxDiverse = 0;
+                Object.entries(plantProjSet).forEach(([p, set]) => { if(set.size > maxDiverse) { maxDiverse = set.size; mostDiversePlant = p; } });
+                if (maxDiverse > 1) {
+                    insightsList.push({ text: `<strong>${mostDiversePlant}</strong> is currently manufacturing the widest variety of projects (<strong>${maxDiverse} different models</strong> active).` });
+                }
+
+                // 18. Lowest Plant Hour (but > 0)
+                let quietestPlant = "", minVol = Infinity;
+                Object.entries(plantSlot).forEach(([p, v]) => { if(v > 0 && v < minVol) { minVol = v; quietestPlant = p; } });
+                if (quietestPlant && minVol < (globalVel / activePlants.size / 2)) {
+                    insightsList.push({ text: `<strong>${quietestPlant}</strong> is currently our quietest active facility, contributing <strong class="text-slate-900 dark:text-white">${Math.round((minVol / globalVel) * 100)}%</strong> of this hour's production.` });
+                }
+
+                // 19. Utilization
+                if (topPlantHour) {
+                    const linesTopToday = Object.values(lineToday).filter(l => l.plant === topPlantHour).length;
+                    const linesTopSlot = Object.values(lineSlot).filter(l => l.plant === topPlantHour).length;
+                    if (linesTopToday > 0) {
+                        insightsList.push({ text: `<strong>${topPlantHour}</strong> is operating efficiently with <strong>${linesTopSlot} out of ${linesTopToday}</strong> available lines actively producing this hour.` });
+                    }
+                }
+
+                // 20. Total Inactive Lines Check
+                const inactiveCount = totalUniqueLinesToday - activeLinesCount;
+                if (inactiveCount > 0) {
+                    insightsList.push({ text: `We currently have <strong>${inactiveCount} line(s)</strong> resting or offline this hour out of the ${totalUniqueLinesToday} that ran today.` });
+                }
+
+                // Shuffle the insights to keep it dynamic
+                for (let i = insightsList.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [insightsList[i], insightsList[j]] = [insightsList[j], insightsList[i]];
+                }
+            }
+
+            // Ticker Logic (10 seconds, text-only fade)
+            if (window.insightTicker) clearInterval(window.insightTicker);
+            let currentInsightIdx = 0;
+            const insightEl = document.getElementById("dynamic-insight");
+
+            function rotateInsight() {
+                if (!insightsList.length || !insightEl) return;
+                insightEl.style.opacity = 0;
+                
+                setTimeout(() => {
+                    const item = insightsList[currentInsightIdx];
+                    insightEl.innerHTML = item.text;
+                    insightEl.style.opacity = 1;
+                    currentInsightIdx = (currentInsightIdx + 1) % insightsList.length;
+                }, 500); 
+            }
+            
+            if (insightsList.length > 0) {
+                rotateInsight(); 
+                if (insightsList.length > 1) {
+                    window.insightTicker = setInterval(rotateInsight, 10000); 
+                }
+            }
+            // ==========================================
+
+
+            // Top Projects Pillbox
+            const projMap = {};
+            rowsToday.forEach(r => projMap[r.ProjCode] = (projMap[r.ProjCode]||0) + r.ProdQty);
+            const topProjs = Object.entries(projMap).sort((a,b)=>b[1]-a[1]).slice(0,3);
+            
+            const tpCont = document.getElementById('top-projects-container');
+            if (tpCont) {
+                const pills = topProjs.map(([pName, pVol]) => 
+                    `<span class="bg-primary/10 border border-primary/20 text-primary font-mono text-[9px] px-2 py-1 rounded font-bold">${pName} <span class="opacity-60 ml-1">${fmt(pVol)}</span></span>`
+                ).join('');
+                tpCont.innerHTML = `<span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mr-1">Top Projects:</span>` + pills;
+            }
+
+            const gvEl = document.getElementById('vel-ALL');
+            if (gvEl) gvEl.innerHTML = `↑ ${fmt(globalVel)} this hour`;
+
+            const plantCards = document.querySelectorAll('.plant-card');
+            plantCards.forEach(card => {
+                const p = card.dataset.plant;
+                
+                const linesToday = new Set(rowsToday.filter(r => r.Plant === p).map(r => r.Line));
+                const linesSlot = new Set(rowsSlot.filter(r => r.Plant === p && r.ProdQty > 0).map(r => r.Line));
+                
+                let dotsHtml = '';
+                const linesArr = Array.from(linesToday).slice(0, 6); 
+                linesArr.forEach(l => {
+                    const active = linesSlot.has(l);
+                    dotsHtml += `<div class="w-1.5 h-1.5 rounded-full ${active ? 'bg-success shadow-[0_0_5px_rgba(16,185,129,0.8)]' : 'bg-slate-200 dark:bg-slate-700'}" title="${l} ${active ? '(Active)' : '(Idle)'}"></div>`;
+                });
+                if (linesToday.size > 6) dotsHtml += `<div class="text-[8px] text-slate-400 ml-1 font-bold">+${linesToday.size - 6}</div>`;
+                document.getElementById(`lh-${p}`).innerHTML = dotsHtml;
+
+                const vel = rowsSlot.filter(r => r.Plant === p).reduce((sum, r) => sum + r.ProdQty, 0);
+                document.getElementById(`vel-${p}`).innerText = `↑ ${fmt(vel)} this hr`;
+
+                // Gradient Sparklines
+                const pRows = rowsToday.filter(r => r.Plant === p);
+                const hourlyMap = {};
+                pRows.forEach(r => hourlyMap[r.Hour] = (hourlyMap[r.Hour]||0) + r.ProdQty);
+                
+                const curH = new Date().getHours();
+                const points = [];
+                let max = 1;
+                for(let h=8; h <= (curH < 8 ? curH+24 : curH); h++) {
+                    const val = hourlyMap[h%24] || 0;
+                    if(val>max) max = val;
+                    points.push(val);
+                }
+                
+                if (points.length > 1) {
+                    const w = 80, h = 24; 
+                    const dx = w / (points.length - 1);
+                    let polyCoords = `0,${h} `;
+                    const lineCoords = points.map((val, i) => {
+                        const y = h - (val/max)*h;
+                        polyCoords += `${i*dx},${y} `;
+                        return `${i*dx},${y}`;
+                    }).join(' ');
+                    polyCoords += `${w},${h}`;
+
+                    document.getElementById(`spark-${p}`).innerHTML = `
+                    <svg viewBox="0 -2 ${w} ${h+4}" class="w-full h-full" preserveAspectRatio="none">
+                        <defs>
+                            <linearGradient id="grad-${p}" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" stop-color="currentColor" stop-opacity="0.3"></stop>
+                                <stop offset="100%" stop-color="currentColor" stop-opacity="0"></stop>
+                            </linearGradient>
+                        </defs>
+                        <polygon points="${polyCoords}" fill="url(#grad-${p})" class="text-primary dark:text-blue-500"></polygon>
+                        <polyline points="${lineCoords}" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-primary dark:text-blue-400"></polyline>
+                    </svg>`;
+                }
+            });
+        } catch (e) { console.warn("Dashboard insights error:", e); }
+    }
+
+    function updateKPIs(data) {
+        const globalVol = data.total || 0;
+        const glbEl = document.getElementById("lv-ALL");
+        if (glbEl) animateValue(glbEl, parseInt(glbEl.dataset.val), globalVol, 800);
+        if (glbEl) glbEl.dataset.val = globalVol;
+
+        let topPlant = "";
+        let topVol = 0;
+
+        Object.entries(data.plant_totals || {}).forEach(([k,v]) => {
+            if (v > topVol) { topVol = v; topPlant = k; }
+            const el = document.getElementById("lv-" + k);
+            if (el) {
+                animateValue(el, parseInt(el.dataset.val), v, 800);
+                el.dataset.val = v;
+                const share = globalVol > 0 ? Math.round((v / globalVol) * 100) : 0;
+                document.getElementById(`share-txt-${k}`).innerText = `${share}%`;
+                document.getElementById(`share-bar-${k}`).style.width = `${share}%`;
+            }
+        });
+    }
+
+    async function fetchLive() {
+        if (PAGE_TYPE !== 'dashboard') return;
+        try {
+            const r = await fetch("/api/live_total?plant=ALL", { cache:"no-store" });
+            if (!r.ok) return;
+            const d = await r.json();
+            updateKPIs(d);
+        } catch(e) {}
+    }
+
+    async function fetchTable() {
+        if (PAGE_TYPE !== 'filter') return;
+        try {
+            const plant = ACTIVE_PLANT;
+            const timefrom = document.getElementById('hid-from').value;
+            const timeto = document.getElementById('hid-to').value;
+
+            const [resToday, resSlot] = await Promise.all([
+                fetch(`/api/breakdown?plant=${encodeURIComponent(plant)}&timefrom=08:00&timeto=23:59`, { cache: "no-store" }),
+                fetch(`/api/breakdown?plant=${encodeURIComponent(plant)}&timefrom=${encodeURIComponent(timefrom)}&timeto=${encodeURIComponent(timeto)}`, { cache: "no-store" })
+            ]);
+
+            const dataToday = await resToday.json();
+            const dataSlot = await resSlot.json();
+
+            const fullMap = {};
+            const slotMap = {};
+            const makeKey = r => `${r.ProjCode}||${r.Line}||${r.Plant || ""}`;
+
+            (dataToday.rows || []).forEach(r => { const k = makeKey(r); fullMap[k] = (fullMap[k] || 0) + r.ProdQty; });
+            (dataSlot.rows || []).forEach(r => { const k = makeKey(r); slotMap[k] = (slotMap[k] || 0) + r.ProdQty; });
+
+            const allKeys = new Set([...Object.keys(fullMap), ...Object.keys(slotMap)]);
+            globalRows = [];
+            
+            allKeys.forEach(k => {
+                const [proj, line, pl] = k.split("||");
+                globalRows.push({ proj, line, plant: pl, today: fullMap[k] || 0, hour: slotMap[k] || 0 });
+            });
+
+            renderTable();
+        } catch (error) {
+            document.getElementById("table-body").innerHTML = `<tr><td colspan="5" class="py-12 text-center text-red-500 text-xs tracking-widest">CONNECTION FAILED</td></tr>`;
+        }
+    }
+
+    function renderTable() {
+        const tbody = document.getElementById("table-body");
+        const showPlant = ACTIVE_PLANT === 'ALL';
+        const pyClass = isCompact ? 'py-1' : 'py-2.5';
+
+        globalRows.sort((a, b) => {
+            let valA = a[sortKey];
+            let valB = b[sortKey];
+            if (typeof valA === 'string') valA = valA.toLowerCase();
+            if (typeof valB === 'string') valB = valB.toLowerCase();
+            if (valA < valB) return -1 * sortDir;
+            if (valA > valB) return 1 * sortDir;
+            return 0;
+        });
+
+        const totalVol = globalRows.reduce((sum, r) => sum + r.today, 0);
+        const statToday = document.getElementById('stat-today');
+        animateValue(statToday, parseInt(statToday.dataset.val), totalVol, 800);
+        statToday.dataset.val = totalVol;
+        document.getElementById('stat-lines').innerText = globalRows.length;
+
+        if (globalRows.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="${showPlant ? 5 : 4}" class="py-12 text-center text-slate-500 text-xs tracking-widest">NO DATA FOR THIS COMBINATION</td></tr>`;
+            updateSortIcons();
+            return;
+        }
+
+        let lastActiveIndex = -1;
+        for (let i = globalRows.length - 1; i >= 0; i--) { if (globalRows[i].today > 0) { lastActiveIndex = i; break; } }
+
+        tbody.innerHTML = globalRows.map((r, index) => {
+            const isZero = r.today === 0 && r.hour === 0;
+            const isAnomaly = r.today > 0 && r.hour === 0;
+            const textClass = isZero ? "text-slate-400 dark:text-slate-600" : "text-slate-800 dark:text-slate-200";
+            
+            const dotClass = r.hour > 0 
+                ? "bg-success shadow-[0_0_5px_rgba(16,185,129,0.6)]" 
+                : (isAnomaly ? "bg-warning animate-pulse-fast shadow-[0_0_5px_rgba(245,158,11,0.6)]" : "bg-slate-300 dark:bg-slate-700");
+
+            let rowBg = "hover:bg-slate-50 dark:hover:bg-slate-800/50";
+            if (index === 0 && r.today > 0) rowBg = "bg-success/5 hover:bg-success/10";
+            else if (index === lastActiveIndex && r.today > 0) rowBg = "bg-warning/5 hover:bg-warning/10";
+
+            return `<tr class="${rowBg} transition-colors border-b border-slate-100 dark:border-border/50 last:border-0 group">
+                <td class="${pyClass} px-4 ${isZero ? 'text-slate-400 dark:text-slate-600' : 'text-primary'}">${r.proj}</td>
+                <td class="${pyClass} px-4 ${textClass} font-semibold flex items-center gap-2">
+                    <span class="w-1.5 h-1.5 rounded-full ${dotClass}"></span>
+                    ${r.line}
+                </td>
+                ${showPlant ? `<td class="${pyClass} px-4 text-[10px] uppercase tracking-wider text-slate-500 border-r border-slate-200 dark:border-border">${r.plant}</td>` : ''}
+                <td class="${pyClass} px-4 text-right border-r border-slate-200 dark:border-border font-bold ${textClass}">${fmt(r.today)}</td>
+                <td class="${pyClass} px-4 text-right font-bold ${r.hour > 0 ? 'text-warning' : (isAnomaly ? 'text-warning/60' : 'text-slate-400 dark:text-slate-600')}">${fmt(r.hour)}</td>
+            </tr>`;
+        }).join("");
+
+        updateSortIcons();
+    }
+
+    if (PAGE_TYPE === 'filter') { syncSlotToHidden(); fetchTable(); } 
+    else { fetchLive(); fetchDashboardInsights(); }
+
+    setInterval(() => {
+        if (PAGE_TYPE === 'filter') fetchTable();
+        else { fetchLive(); fetchDashboardInsights(); }
+    }, 30000); 
+
 </script>
-<script>
-(() => {
-  const root = document.documentElement;
-  const key = "pd_theme";
-  const btn = document.getElementById("profile-btn");
-  const pop = document.getElementById("profile-pop");
-  const toggle = document.getElementById("theme-toggle");
-  const state = document.getElementById("theme-state");
-  const getTheme = () => root.getAttribute("data-theme") === "dark" ? "dark" : "light";
-  const setTheme = (t) => {
-    root.setAttribute("data-theme", t);
-    localStorage.setItem(key, t);
-    if (state) state.textContent = t === "dark" ? "On" : "Off";
-  };
-  setTheme(getTheme());
-  if (btn && pop) {
-    btn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      const open = pop.classList.toggle("open");
-      btn.setAttribute("aria-expanded", open ? "true" : "false");
-    });
-    document.addEventListener("click", (e) => {
-      if (!pop.contains(e.target) && e.target !== btn) {
-        pop.classList.remove("open");
-        btn.setAttribute("aria-expanded", "false");
-      }
-    });
-  }
-  if (toggle) {
-    toggle.addEventListener("click", () => setTheme(getTheme() === "dark" ? "light" : "dark"));
-  }
-})();
-</script>
-</body>
-</html>
-
-
-
-
-
-
-
-
+{% endblock %}

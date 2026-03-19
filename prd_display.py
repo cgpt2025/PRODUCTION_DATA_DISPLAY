@@ -28,7 +28,7 @@ PLANTS = {
     "GUWAHATI": {"server": "10.161.1.22",   "db": "ProjectConfiguration", "user": "sa", "pwd": "pass@123"},
 }
 
-DEFAULT_PLANT = "ALL"          # ← default is now ALL plants
+DEFAULT_PLANT = "ALL"
 SA_PWD_DEFAULT = "pass@123"
 SA_PWD_RCP     = "genus_PROD"
 

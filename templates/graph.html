@@ -1,429 +1,228 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <title>Production Graphs</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
-  <script>
-    (function () {
-      const key = "pd_theme";
-      const saved = localStorage.getItem(key);
-      if (saved === "dark" || saved === "light") {
-        document.documentElement.setAttribute("data-theme", saved);
-      }
-    })();
-  </script>
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    :root {
-      --bg:#eef1f6; --surface:#fff; --border:#dde1ea; --border2:#c8cedb;
-      --text:#0f172a; --muted:#64748b; --blue:#2563eb; --blue-lt:#eff6ff; --blue-mid:#bfdbfe;
-      --amber:#b45309; --amber-lt:#fffbeb; --amber-mid:#fde68a; --radius:10px; --radius-lg:14px;
-      --shadow-sm:0 1px 3px rgba(0,0,0,.05),0 1px 2px rgba(0,0,0,.03);
-      --shadow:0 4px 14px rgba(0,0,0,.07),0 1px 3px rgba(0,0,0,.04);
-    }
-    :root[data-theme="dark"] {
-      --bg:#0b1220; --surface:#0f172a; --border:#24344f; --border2:#33496b;
-      --text:#e2e8f0; --muted:#93a4bd; --blue:#3b82f6; --blue-lt:#13284f; --blue-mid:#2b4f85;
-      --amber:#f0c879; --amber-lt:#2a1f0f; --amber-mid:#7a6028;
-      --shadow-sm:0 1px 2px rgba(0,0,0,.35),0 1px 4px rgba(0,0,0,.25);
-      --shadow:0 6px 18px rgba(0,0,0,.35),0 1px 4px rgba(0,0,0,.25);
-    }
-    body { font-family:"Plus Jakarta Sans",sans-serif; background:var(--bg); color:var(--text); }
-    .navbar {
-      background:var(--surface); border-bottom:1px solid var(--border); height:58px; padding:0 28px;
-      display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:50; box-shadow:var(--shadow-sm);
-    }
-    .nb-left { display:flex; align-items:center; gap:14px; }
-    .nb-logo { width:34px; height:34px; border-radius:9px; background:var(--blue); display:flex; align-items:center; justify-content:center; }
-    .nb-logo svg { stroke:#fff; }
-    .nb-title { font-size:.93rem; font-weight:700; letter-spacing:-.02em; }
-    .nb-sub { font-size:.67rem; color:var(--muted); font-family:"IBM Plex Mono",monospace; margin-top:1px; }
-    .nb-right { display:flex; align-items:center; gap:10px; }
-    .nb-nav { display:flex; align-items:center; gap:8px; }
-    .nb-link {
-      text-decoration:none; color:var(--muted); font-size:.78rem; font-weight:600;
-      padding:6px 11px; border-radius:8px; border:1px solid transparent; transition:all .14s;
-    }
-    .nb-link:hover { color:#334155; background:#f5f7fa; border-color:var(--border); }
-    .nb-link.active { color:#1d4ed8; background:var(--blue-lt); border-color:var(--blue-mid); }
-    .nb-date { font-family:"IBM Plex Mono",monospace; font-size:.72rem; color:var(--muted); background:#f5f7fa; border:1px solid var(--border); border-radius:6px; padding:4px 10px; }
-    .btn-logout {
-      display:flex; align-items:center; gap:6px; font-size:.77rem; font-weight:600; color:var(--muted);
-      background:var(--surface); border:1px solid var(--border2); border-radius:6px; padding:0 13px; height:32px; text-decoration:none;
-    }
-    .profile-menu { position: relative; }
-    .profile-btn {
-      width:34px; height:34px; border-radius:999px; border:1px solid var(--border2); background:var(--surface);
-      color:var(--muted); display:inline-flex; align-items:center; justify-content:center; cursor:pointer; transition:all .14s;
-    }
-    .profile-btn:hover { color:var(--text); border-color:var(--blue-mid); background:var(--blue-lt); }
-    .profile-pop {
-      position:absolute; right:0; top:calc(100% + 8px); min-width:220px; background:var(--surface);
-      border:1px solid var(--border); border-radius:10px; box-shadow:var(--shadow); padding:6px; display:none; z-index:80;
-    }
-    .profile-pop.open { display:block; }
-    .pm-item {
-      width:100%; text-decoration:none; border:none; background:transparent; color:var(--text); border-radius:8px;
-      padding:8px 9px; display:flex; align-items:center; justify-content:space-between; gap:8px; cursor:pointer; font-size:.78rem;
-      font-family:"Plus Jakarta Sans",sans-serif;
-    }
-    .pm-item:hover { background:#f5f7fa; }
-    :root[data-theme="dark"] .pm-item:hover { background:#111d34; }
-    .pm-item-left { display:inline-flex; align-items:center; gap:8px; }
-    .pm-item.danger { color:#ef4444; }
-    .pm-state {
-      font-family:"IBM Plex Mono",monospace; font-size:.68rem; color:var(--muted);
-      border:1px solid var(--border2); border-radius:999px; padding:2px 8px;
-    }
-    .page { max-width:1440px; margin:0 auto; padding:24px 28px 50px; }
-    .head { display:flex; align-items:center; gap:10px; margin-bottom:14px; }
-    .head h2 { font-size:.92rem; font-weight:700; color:#334155; }
-    .head .sub { font-size:.68rem; color:var(--muted); font-family:"IBM Plex Mono",monospace; }
-    .line { flex:1; height:1px; background:var(--border); }
-    .filter-row {
-      background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg);
-      box-shadow:var(--shadow-sm); padding:14px 16px; display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:14px;
-    }
-    .fg { display:flex; align-items:center; border:1px solid var(--border2); border-radius:var(--radius); overflow:hidden; height:36px; background:var(--surface); }
-    .fg-lbl {
-      padding:0 11px; font-size:.62rem; font-weight:700; font-family:"IBM Plex Mono",monospace; text-transform:uppercase; letter-spacing:.1em;
-      color:var(--muted); border-right:1px solid var(--border2); height:100%; display:flex; align-items:center; background:#edf0f5;
-    }
-    .fg select { border:none; outline:none; background:transparent; color:var(--text); font-family:"IBM Plex Mono",monospace; font-size:.78rem; padding:0 10px; min-width:130px; }
-    .panel-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
-    .panel.wide { grid-column: 1 / -1; }
-    .panel { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); box-shadow:var(--shadow); padding:14px; }
-    .panel h3 { font-size:.78rem; font-weight:700; color:#334155; margin-bottom:10px; }
-    :root[data-theme="dark"] .panel h3 { color: var(--text2, #cbd5e1); }
-    .chart-wrap { height: 360px; }
-    .panel canvas { width:100%; height:100% !important; }
-    .plant-viz-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 12px; }
-    .mini-panel {
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
-      padding: 10px;
-      min-height: 350px;
-    }
-    .mini-panel h4 {
-      font-size: .7rem;
-      color: #475569;
-      font-family: "IBM Plex Mono", monospace;
-      letter-spacing: .08em;
-      text-transform: uppercase;
-      margin-bottom: 8px;
-    }
-    .chart-wrap.leader { height: 290px; }
-    .donut-stack { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: center; }
-    .chart-wrap.donut {
-      height: 250px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding-top: 8px;
-    }
-    .plant-list {
-      list-style: none;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      max-height: 250px;
-      overflow: auto;
-      padding-right: 4px;
-    }
-    .plant-list li {
-      display: grid;
-      grid-template-columns: auto 1fr auto auto;
-      gap: 8px;
-      align-items: center;
-      padding: 6px 8px;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      background: #fff;
-      font-family: "IBM Plex Mono", monospace;
-      font-size: .68rem;
-      color: #334155;
-    }
-    :root[data-theme="dark"] .mini-panel { background: linear-gradient(180deg, #0f172a 0%, #13203a 100%); }
-    :root[data-theme="dark"] .plant-list li { background:#0f172a; color:#cbd5e1; }
-    .dot {
-      width: 9px;
-      height: 9px;
-      border-radius: 50%;
-      display: inline-block;
-    }
-    .rank {
-      min-width: 24px;
-      text-align: right;
-      color: #64748b;
-    }
-    .share {
-      color: #0f172a;
-      font-weight: 600;
-    }
-    #progress-bar {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      height: 3px;
-      width: 0;
-      background: var(--blue);
-      z-index: 10000;
-      border-radius: 0 2px 2px 0;
-      box-shadow: 0 0 8px rgba(37, 99, 235, .5);
-    }
-    #loading-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(238, 241, 246, 0.82);
-      backdrop-filter: blur(2px);
-      z-index: 9999;
-      align-items: center;
-      justify-content: center;
-    }
-    #loading-overlay.active { display: flex; }
-    .loader-card {
-      background: var(--surface);
-      border: 1px solid var(--border2);
-      border-radius: 12px;
-      padding: 22px 30px;
-      box-shadow: var(--shadow);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 10px;
-    }
-    .spinner {
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
-      border: 2px solid var(--border2);
-      border-top-color: var(--blue);
-      animation: spin .6s linear infinite;
-    }
-    .loader-text {
-      font-family: "IBM Plex Mono", monospace;
-      font-size: 0.72rem;
-      color: var(--muted);
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    @media (max-width: 980px) {
-      .panel-grid { grid-template-columns:1fr; }
-      .plant-viz-grid { grid-template-columns:1fr; }
-      .donut-stack { grid-template-columns:1fr; }
-      .navbar { padding:0 12px; }
-      .nb-sub { display:none; }
-      .nb-date { display:none; }
-    }
-  </style>
-</head>
-<body>
-<div id="progress-bar"></div>
-<div id="loading-overlay" class="active">
-  <div class="loader-card">
-    <div class="spinner"></div>
-    <div class="loader-text">Fetching production data...</div>
-  </div>
-</div>
-<nav class="navbar">
-  <div class="nb-left">
-    <div class="nb-logo">
-      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-        <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>
-      </svg>
-    </div>
-    <div>
-      <div class="nb-title">Production Dashboard</div>
-      <div class="nb-sub">Charts and visual trends</div>
-    </div>
-  </div>
-  <div class="nb-right">
-    <div class="nb-nav">
-      <a href="{{ url_for('dashboard') }}" class="nb-link {% if page == 'dashboard' %}active{% endif %}">Dashboard</a>
-      <a href="{{ url_for('filter_page') }}" class="nb-link {% if page == 'filter' %}active{% endif %}">Filter</a>
-      <a href="{{ url_for('graph_page') }}" class="nb-link {% if page == 'graph' %}active{% endif %}">Graph</a>
-    </div>
-    <div class="nb-date">{{ today }}</div>
-    <div class="profile-menu">
-      <button type="button" class="profile-btn" id="profile-btn" aria-label="Profile menu" aria-expanded="false">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-7 8-7s8 3 8 7"/>
-        </svg>
-      </button>
-      <div class="profile-pop" id="profile-pop">
-        <button type="button" class="pm-item" id="theme-toggle">
-          <span class="pm-item-left">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 3v2m0 14v2M3 12h2m14 0h2M5.6 5.6l1.4 1.4m10 10 1.4 1.4M5.6 18.4 7 17m10-10 1.4-1.4"/><circle cx="12" cy="12" r="4"/>
-            </svg>
-            <span>Dark Mode</span>
-          </span>
-          <span class="pm-state" id="theme-state">Off</span>
-        </button>
-        <a href="{{ url_for('logout') }}" class="pm-item danger">
-          <span class="pm-item-left">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
-            </svg>
-            <span>Logout</span>
-          </span>
-        </a>
-      </div>
-    </div>
-  </div>
-</nav>
+{% extends "base.html" %}
 
-<div class="page">
-  <div class="head">
-    <h2>Production Graphs</h2>
-    <span class="sub">Auto-updating every <span id="refresh-sec">30</span>s · <span id="asof">—</span></span>
-    <div class="line"></div>
-  </div>
+{% block title %}Analytics | Meter Production{% endblock %}
 
-  <form id="graph-form" method="get" class="filter-row" onsubmit="showLoading()">
-    <div class="fg">
-      <span class="fg-lbl">Plant</span>
-      <select id="plant" name="plant" onchange="this.form.submit()">
-        <option value="ALL" {% if plant == "ALL" %}selected{% endif %}>All Plant</option>
-        {% for p in plant_names %}
-        <option value="{{ p }}" {% if p == plant or (not plant and p == "GPIL-2") %}selected{% endif %}>{{ p }}</option>
-        {% endfor %}
-      </select>
-    </div>
-    {#
-    {% set slot_start = (timefrom.split(':')[0] | int) if timefrom else 0 %}
-    <div class="fg">
-      <span class="fg-lbl">Slot</span>
-      <select id="slot" onchange="onSlotChange()">
-        {% for h in range(8, 24) %}
-        {% set endh = (h + 1) % 24 %}
-        {% set h12 = 12 if (h % 12) == 0 else (h % 12) %}
-        {% set endh12 = 12 if (endh % 12) == 0 else (endh % 12) %}
-        <option value="{{ h }}" {% if slot_start == h %}selected{% endif %}>{{ '%02d:00 %s' % (h12, 'am' if h < 12 else 'pm') }} - {{ '%02d:00 %s' % (endh12, 'am' if endh < 12 else 'pm') }}</option>
-        {% endfor %}
-        {% for h in range(0, 8) %}
-        {% set endh = (h + 1) % 24 %}
-        {% set h12 = 12 if (h % 12) == 0 else (h % 12) %}
-        {% set endh12 = 12 if (endh % 12) == 0 else (endh % 12) %}
-        <option value="{{ h }}" {% if slot_start == h %}selected{% endif %}>{{ '%02d:00 %s' % (h12, 'am' if h < 12 else 'pm') }} - {{ '%02d:00 %s' % (endh12, 'am' if endh < 12 else 'pm') }}</option>
-        {% endfor %}
-      </select>
-    </div>
-    #}
-    <input type="hidden" id="timefrom" name="timefrom" value="{{ timefrom }}">
-    <input type="hidden" id="timeto" name="timeto" value="{{ timeto }}">
-    <div class="fg">
-      <span class="fg-lbl">Project</span>
-      <select id="project" name="project" onchange="this.form.submit()">
-        <option value="ALL" {% if project == "ALL" %}selected{% endif %}>All Projects</option>
-        {% if project and project != "ALL" %}<option value="{{ project }}" selected>{{ project }}</option>{% endif %}
-      </select>
-    </div>
-    <div class="fg">
-      <span class="fg-lbl">Line</span>
-      <select id="line" name="line" onchange="this.form.submit()">
-        <option value="ALL" {% if line == "ALL" %}selected{% endif %}>All Lines</option>
-        {% if line and line != "ALL" %}<option value="{{ line }}" selected>{{ line }}</option>{% endif %}
-      </select>
-    </div>
-  </form>
+{% block head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
+{% endblock %}
 
-  <div class="panel-grid">
-    <div class="panel" id="line-today-panel">
-      <h3>Line-wise Production (Today 8 AM+)</h3>
-      <div class="chart-wrap"><canvas id="lineTodayChart"></canvas></div>
+{% block content %}
+<div id="pdf-wrapper" class="max-w-7xl mx-auto space-y-4 bg-slate-50 dark:bg-obsidian">
+
+    <div id="pdf-header" style="display:none;" class="mb-6 border-b border-slate-300 pb-4 pt-4 px-2">
+        <h1 class="text-2xl font-bold text-slate-900">Production Analytics &mdash; {{ 'All Plants' if plant == 'ALL' else plant }}</h1>
+        <p class="text-sm text-slate-600 font-mono mt-2" id="pdf-timestamp"></p>
     </div>
-    <div class="panel" id="line-slot-panel">
-      <h3 id="line-slot-heading">Line-wise Production (Current Hour)</h3>
-      <div class="chart-wrap"><canvas id="lineChart"></canvas></div>
-    </div>
-    <div class="panel wide" id="plant-total-panel">
-      <h3>Plant-wise Total Production (8 AM+)</h3>
-      <div class="plant-viz-grid">
-        <div class="mini-panel">
-          <h4>Ranked Horizontal Leaderboard</h4>
-          <div class="chart-wrap leader"><canvas id="plantLeaderboardChart"></canvas></div>
+
+    <div class="flex items-center justify-between px-1 mb-2 no-pdf">
+        <div>
+            <h2 class="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2 mb-1">
+                <span>Production Analytics &mdash; {{ 'All Plants' if plant == 'ALL' else plant }}</span>
+                <span class="px-2 py-0.5 rounded text-[9px] font-mono bg-primary/10 text-primary uppercase border border-primary/20">LIVE GRAPHS</span>
+            </h2>
+            <div class="text-xs font-mono text-slate-500">
+                Auto-updating every <span id="refresh-sec">30</span>s
+            </div>
         </div>
-        <div class="mini-panel">
-          <h4>Percentage Contribution</h4>
-          <h4></h4>
-          <div class="donut-stack">
-            <div class="chart-wrap donut"><canvas id="plantDonutChart"></canvas></div>
-            <ul id="plantSideList" class="plant-list"></ul>
-          </div>
+        <div class="flex gap-2">
+            <button id="export-pdf-btn" onclick="exportPDF()" class="text-xs font-bold text-primary bg-primary/10 px-3 py-1.5 rounded-lg border border-primary/20 hover:bg-primary/20 transition-colors flex items-center gap-2">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                Export PDF
+            </button>
+            <a href="{{ url_for('dashboard') }}" class="text-xs font-bold text-slate-500 hover:text-slate-800 dark:hover:text-white bg-slate-100 dark:bg-obsidian px-3 py-1.5 rounded-lg border border-slate-200 dark:border-border transition-colors flex items-center gap-2">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                Back to Dashboard
+            </a>
         </div>
-      </div>
     </div>
-  </div>
+
+    <form id="graph-form" method="get" class="bg-white dark:bg-panel border border-slate-200 dark:border-border rounded-xl p-2 flex flex-wrap gap-2 items-center no-pdf" onsubmit="document.getElementById('progress-bar').style.width = '50%';">
+        
+        <input type="hidden" id="timefrom" name="timefrom" value="{{ timefrom }}">
+        <input type="hidden" id="timeto" name="timeto" value="{{ timeto }}">
+
+        <div class="flex items-center bg-slate-50 dark:bg-obsidian border border-slate-200 dark:border-border rounded-lg overflow-hidden focus-within:ring-1 focus-within:ring-primary">
+            <span class="px-3 text-[9px] font-bold text-slate-500 uppercase tracking-widest border-r border-slate-200 dark:border-border">Plant</span>
+            <select id="plant" name="plant" onchange="this.form.submit()" class="bg-transparent text-xs font-mono text-slate-700 dark:text-slate-300 py-1.5 pl-3 pr-8 focus:outline-none appearance-none cursor-pointer">
+                <option value="ALL" {% if plant == "ALL" %}selected{% endif %} class="dark:bg-panel">All Plants</option>
+                {% for p in plant_names %}
+                <option value="{{ p }}" {% if p == plant or (not plant and p == "GPIL-2") %}selected{% endif %} class="dark:bg-panel">{{ p }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="flex items-center bg-slate-50 dark:bg-obsidian border border-slate-200 dark:border-border rounded-lg overflow-hidden focus-within:ring-1 focus-within:ring-primary">
+            <span class="px-3 text-[9px] font-bold text-slate-500 uppercase tracking-widest border-r border-slate-200 dark:border-border">Project</span>
+            <select id="project" name="project" onchange="this.form.submit()" class="bg-transparent text-xs font-mono text-slate-700 dark:text-slate-300 py-1.5 pl-3 pr-8 focus:outline-none appearance-none cursor-pointer">
+                <option value="ALL" {% if project == "ALL" %}selected{% endif %} class="dark:bg-panel">All Projects</option>
+                {% if project and project != "ALL" %}<option value="{{ project }}" selected class="dark:bg-panel">{{ project }}</option>{% endif %}
+            </select>
+        </div>
+
+        <div class="flex items-center bg-slate-50 dark:bg-obsidian border border-slate-200 dark:border-border rounded-lg overflow-hidden focus-within:ring-1 focus-within:ring-primary">
+            <span class="px-3 text-[9px] font-bold text-slate-500 uppercase tracking-widest border-r border-slate-200 dark:border-border">Line</span>
+            <select id="line" name="line" onchange="this.form.submit()" class="bg-transparent text-xs font-mono text-slate-700 dark:text-slate-300 py-1.5 pl-3 pr-8 focus:outline-none appearance-none cursor-pointer">
+                <option value="ALL" {% if line == "ALL" %}selected{% endif %} class="dark:bg-panel">All Lines</option>
+                {% if line and line != "ALL" %}<option value="{{ line }}" selected class="dark:bg-panel">{{ line }}</option>{% endif %}
+            </select>
+        </div>
+    </form>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        
+        <div class="bg-white dark:bg-panel border border-slate-200 dark:border-border rounded-xl p-4 shadow-sm" id="line-today-panel">
+            <h3 class="text-xs font-bold text-slate-800 dark:text-slate-200 tracking-wider mb-4">Line-wise Production <span class="text-[9px] text-slate-400 ml-1 uppercase">(Today 8 AM+)</span></h3>
+            <div class="h-80 w-full relative"><canvas id="lineTodayChart"></canvas></div>
+        </div>
+        
+        <div class="bg-white dark:bg-panel border border-slate-200 dark:border-border rounded-xl p-4 shadow-sm" id="line-slot-panel">
+            <h3 class="text-xs font-bold text-slate-800 dark:text-slate-200 tracking-wider mb-4" id="line-slot-heading">Line-wise Production <span class="text-[9px] text-slate-400 ml-1 uppercase">(Current Hour)</span></h3>
+            <div class="h-80 w-full relative"><canvas id="lineChart"></canvas></div>
+        </div>
+
+        <div class="col-span-1 lg:col-span-2 bg-white dark:bg-panel border border-slate-200 dark:border-border rounded-xl p-4 shadow-sm" id="plant-total-panel">
+            <h3 class="text-xs font-bold text-slate-800 dark:text-slate-200 tracking-wider mb-4">Plant-wise Total Production <span class="text-[9px] text-slate-400 ml-1 uppercase">(8 AM+)</span></h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-slate-50 dark:bg-obsidian border border-slate-100 dark:border-border/50 rounded-xl p-4">
+                    <h4 class="text-[9px] font-mono font-bold text-slate-500 uppercase tracking-widest mb-4">Ranked Leaderboard</h4>
+                    <div class="h-64 w-full relative"><canvas id="plantLeaderboardChart"></canvas></div>
+                </div>
+                
+                <div class="bg-slate-50 dark:bg-obsidian border border-slate-100 dark:border-border/50 rounded-xl p-4">
+                    <h4 class="text-[9px] font-mono font-bold text-slate-500 uppercase tracking-widest mb-4">Percentage Contribution</h4>
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
+                        <div class="h-56 relative flex justify-center"><canvas id="plantDonutChart"></canvas></div>
+                        <ul id="plantSideList" class="flex flex-col gap-2 max-h-56 hover-scroll pr-1"></ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}
 
 {% block scripts %}
 <script>
-const qs = new URLSearchParams(window.location.search);
-const fmt = n => (typeof n === "number" ? n : 0).toLocaleString("en-IN");
-const AUTO_REFRESH_MS = 30000;
-let plantLeaderboardChart;
-let plantDonutChart;
-let lineChart;
-let lineTodayChart;
-let firstLoad = true;
-const plantSideListEl = document.getElementById("plantSideList");
-const lineTodayPanelEl = document.getElementById("line-today-panel");
-const lineSlotPanelEl = document.getElementById("line-slot-panel");
-const plantTotalPanelEl = document.getElementById("plant-total-panel");
+    const qs = new URLSearchParams(window.location.search);
+    const fmt = n => (typeof n === "number" ? n : 0).toLocaleString("en-IN");
+    const AUTO_REFRESH_MS = 30000;
+    const ACTIVE_PLANT = qs.get("plant") || "{{ plant }}";
+    
+    let plantLeaderboardChart, plantDonutChart, lineChart, lineTodayChart;
+    const plantSideListEl = document.getElementById("plantSideList");
+    const lineTodayPanelEl = document.getElementById("line-today-panel");
+    const lineSlotPanelEl = document.getElementById("line-slot-panel");
+    const plantTotalPanelEl = document.getElementById("plant-total-panel");
 
-const overlay = document.getElementById("loading-overlay");
-const bar = document.getElementById("progress-bar");
-let bw = 0;
-let bt = null;
+    const isDark = () => document.documentElement.classList.contains('dark');
+    const gridColor = () => isDark() ? '#1e293b' : '#f1f5f9'; 
+    const textColor = () => isDark() ? '#94a3b8' : '#64748b'; 
 
-function startBar() {
-  bar.style.transition = "";
-  bar.style.width = "0";
-  bar.style.display = "block";
-  bw = 0;
-  clearInterval(bt);
-  bt = setInterval(() => {
-    bw += bw < 30 ? 5 : bw < 65 ? 2 : 0.3;
-    bar.style.width = bw + "%";
-    if (bw >= 85) clearInterval(bt);
-  }, 80);
-}
+    // --- Direct PDF Export (html2pdf) ---
+    async function exportPDF() {
+        const wrapper = document.getElementById('pdf-wrapper');
+        const btn = document.getElementById('export-pdf-btn');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = `<svg class="animate-spin w-3.5 h-3.5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Generating...`;
 
-function showLoading() {
-  overlay.classList.add("active");
-  startBar();
-}
+        // 1. Force Light Mode & Setup UI
+        const html = document.documentElement;
+        const wasDark = html.classList.contains('dark');
+        if (wasDark) {
+            html.classList.remove('dark');
+            updateChartColorsForPrint(false); // Force charts to render light mode colors
+        }
 
-function hideLoading() {
-  clearInterval(bt);
-  bar.style.transition = "width .15s";
-  bar.style.width = "100%";
-  setTimeout(() => {
-    bar.style.transition = "opacity .3s";
-    bar.style.opacity = "0";
-    setTimeout(() => {
-      bar.style.display = "none";
-      bar.style.opacity = "";
-      overlay.classList.remove("active");
-    }, 300);
-  }, 200);
-}
+        document.getElementById('pdf-header').style.display = 'block';
+        document.querySelectorAll('.no-pdf').forEach(el => el.style.display = 'none');
 
-function onSlotChange() {
-  showLoading();
-  const h = parseInt(document.getElementById("slot").value, 10);
-  document.getElementById("timefrom").value = String(h).padStart(2, "0") + ":00";
-  document.getElementById("timeto").value = String((h + 1) % 24).padStart(2, "0") + ":00";
-  document.getElementById("graph-form").submit();
-}
+        // 2. Set Dynamic Timestamp
+        const now = new Date();
+        const dateStr = now.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+        const timeStr = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
+        document.getElementById('pdf-timestamp').innerHTML = `<strong>Report up to:</strong> ${dateStr}, ${timeStr}`;
+
+        // Wait for DOM & Canvas to redraw
+        await new Promise(r => setTimeout(r, 300));
+
+        // 3. Generate PDF (A3 Landscape fits Dashboards beautifully)
+        const opt = {
+            margin:       0.3,
+            filename:     `Production_Analytics_${ACTIVE_PLANT}_${new Date().getTime()}.pdf`,
+            image:        { type: 'jpeg', quality: 1 },
+            html2canvas:  { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
+            jsPDF:        { unit: 'in', format: 'a3', orientation: 'landscape' }
+        };
+
+        try { await html2pdf().set(opt).from(wrapper).save(); } 
+        catch (e) { console.error("PDF Generation Error", e); }
+
+        // 4. Restore UI & Dark Mode
+        document.getElementById('pdf-header').style.display = 'none';
+        document.querySelectorAll('.no-pdf').forEach(el => el.style.display = '');
+        if (wasDark) {
+            html.classList.add('dark');
+            updateChartColorsForPrint(true);
+        }
+        btn.innerHTML = originalText;
+    }
+
+    function updateChartColorsForPrint(isDarkTheme) {
+        const gridC = isDarkTheme ? '#1e293b' : '#f1f5f9';
+        const textC = isDarkTheme ? '#94a3b8' : '#64748b';
+
+        const charts = [lineTodayChart, lineChart, plantLeaderboardChart, plantDonutChart];
+        charts.forEach(chart => {
+            if (!chart) return;
+            if (chart.options.scales) {
+                if (chart.options.scales.x) {
+                    if (chart.options.scales.x.grid) chart.options.scales.x.grid.color = gridC;
+                    if (chart.options.scales.x.ticks) chart.options.scales.x.ticks.color = textC;
+                }
+                if (chart.options.scales.y) {
+                    if (chart.options.scales.y.grid) chart.options.scales.y.grid.color = gridC;
+                    if (chart.options.scales.y.ticks) chart.options.scales.y.ticks.color = textC;
+                }
+            }
+            // Update Datalabels on Leaderboard
+            if (chart.config.type === 'bar' && chart.options.plugins && chart.options.plugins.datalabels) {
+                chart.options.plugins.datalabels.color = (ctx) => {
+                    const vals = (ctx.chart.data.datasets[0].data || []).map(v => Number(v) || 0);
+                    const max = vals.length ? Math.max(...vals) : 0;
+                    return Number(ctx.raw) >= max * 0.15 ? "#ffffff" : textC;
+                };
+            }
+            chart.update('none'); 
+        });
+    }
+
+    // Custom Donut Center Text Plugin
+    const centerTextPlugin = {
+        id: 'centerText',
+        beforeDraw: function(chart) {
+            if (chart.config.type !== 'doughnut') return;
+            const width = chart.width, height = chart.height, ctx = chart.ctx;
+            ctx.restore();
+            const total = chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+            
+            ctx.font = 'bold 24px "JetBrains Mono", monospace';
+            ctx.textBaseline = 'middle';
+            ctx.fillStyle = isDark() ? '#ffffff' : '#0f172a';
+            
+            const text = fmt(total), textX = Math.round((width - ctx.measureText(text).width) / 2), textY = height / 2;
+            ctx.fillText(text, textX, textY);
+            
+            ctx.font = 'bold 10px Inter';
+            ctx.fillStyle = isDark() ? '#64748b' : '#94a3b8';
+            const label = "TOTAL METERS";
+            ctx.fillText(label, Math.round((width - ctx.measureText(label).width) / 2), textY + 22);
+            ctx.save();
+        }
+    };
+    Chart.register(centerTextPlugin);
 
     function toSlotHeaderLabel(from, to) {
         const to12 = (hhmm) => {
@@ -447,184 +246,147 @@ function onSlotChange() {
         bodyFont: { family: '"JetBrains Mono", monospace', size: 14, weight: 'bold' }
     };
 
-function buildOrUpdateChart(chartRef, canvasId, labels, values, color, horizontal=false) {
-  const cfg = {
-    type: "bar",
-    data: { labels, datasets: [{ data: values, borderRadius: 6, backgroundColor: color }] },
-    options: {
-      indexAxis: horizontal ? "y" : "x",
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { display: false },
-        datalabels: {
-          color: (ctx) => {
-            const vals = (ctx.chart.data.datasets[0].data || []).map(v => Number(v) || 0);
-            const max = vals.length ? Math.max(...vals) : 0;
-            const v = Number(ctx.raw) || 0;
-            return v >= max * 0.14 ? "#ffffff" : "#334155";
-          },
-          anchor: "end",
-          align: (ctx) => {
-            const vals = (ctx.chart.data.datasets[0].data || []).map(v => Number(v) || 0);
-            const max = vals.length ? Math.max(...vals) : 0;
-            const v = Number(ctx.raw) || 0;
-            if (horizontal) return v >= max * 0.14 ? "left" : "right";
-            return v >= max * 0.14 ? "start" : "top";
-          },
-          offset: (ctx) => {
-            const vals = (ctx.chart.data.datasets[0].data || []).map(v => Number(v) || 0);
-            const max = vals.length ? Math.max(...vals) : 0;
-            const v = Number(ctx.raw) || 0;
-            if (horizontal) return v >= max * 0.14 ? 6 : 4;
-            return v >= max * 0.14 ? 2 : 4;
-          },
-          clamp: true,
-          clip: false,
-          formatter: (v) => fmt(v),
-          font: { family: "IBM Plex Mono", size: 10, weight: "600" }
-        }
-      },
-      layout: { padding: { right: 26 } },
-      scales: {
-        x: {
-          ticks: {
-            color: "#64748b",
-            font: { family: "IBM Plex Mono", size: 10 },
-            autoSkip: false,
-            minRotation: horizontal ? 0 : 55,
-            maxRotation: horizontal ? 0 : 55
-          },
-          grid: { color: "#eef2f7" }
-        },
-        y: {
-          ticks: { color: "#64748b", font: { family: "IBM Plex Mono", size: 10 }, autoSkip: true, maxTicksLimit: horizontal ? 20 : 8 },
-          grid: { color: "#eef2f7" }
-        },
-      }
+    function buildOrUpdateChart(chartRef, canvasId, labels, values, color, horizontal=false) {
+        const cfg = {
+            type: "bar",
+            data: { labels, datasets: [{ label: 'Volume', data: values, borderRadius: 4, backgroundColor: color }] },
+            options: {
+                indexAxis: horizontal ? "y" : "x",
+                responsive: true, maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: commonTooltip,
+                    datalabels: {
+                        color: (ctx) => {
+                            const vals = (ctx.chart.data.datasets[0].data || []).map(v => Number(v) || 0);
+                            const max = vals.length ? Math.max(...vals) : 0;
+                            return Number(ctx.raw) >= max * 0.15 ? "#ffffff" : textColor();
+                        },
+                        anchor: "end",
+                        align: (ctx) => {
+                            const vals = (ctx.chart.data.datasets[0].data || []).map(v => Number(v) || 0);
+                            const max = vals.length ? Math.max(...vals) : 0;
+                            const isInside = Number(ctx.raw) >= max * 0.15;
+                            if (horizontal) return isInside ? "left" : "right";
+                            return isInside ? "start" : "top";
+                        },
+                        offset: (ctx) => {
+                            const vals = (ctx.chart.data.datasets[0].data || []).map(v => Number(v) || 0);
+                            const max = vals.length ? Math.max(...vals) : 0;
+                            return Number(ctx.raw) >= max * 0.15 ? 4 : 4;
+                        },
+                        formatter: (v) => fmt(v),
+                        font: { family: '"JetBrains Mono", monospace', size: 10, weight: "600" }
+                    }
+                },
+                layout: { padding: { right: horizontal ? 30 : 0, top: horizontal ? 0 : 20 } },
+                scales: {
+                    x: { ticks: { color: textColor(), font: { size: 10 } }, grid: { color: gridColor(), drawBorder: false } },
+                    y: { ticks: { color: textColor(), font: { size: 10 } }, grid: { color: gridColor(), drawBorder: false } }
+                }
+            }
+        };
+        if (!chartRef) return new Chart(document.getElementById(canvasId), cfg);
+        chartRef.data.labels = labels;
+        chartRef.data.datasets[0].data = values;
+        chartRef.options.scales.x.grid.color = gridColor();
+        chartRef.options.y.grid.color = gridColor();
+        chartRef.options.scales.x.ticks.color = textColor();
+        chartRef.options.y.ticks.color = textColor();
+        chartRef.update();
+        return chartRef;
     }
-  };
-  if (!chartRef) return new Chart(document.getElementById(canvasId), cfg);
-  chartRef.data.labels = labels;
-  chartRef.data.datasets[0].data = values;
-  chartRef.update();
-  return chartRef;
-}
 
-function getPlantEntries(plantTotals) {
-  return Object.entries(plantTotals || {})
-    .map(([k, v]) => [k, Number(v) || 0])
-    .filter(([,v]) => v > 0)
-    .sort((a, b) => (b[1] - a[1]) || a[0].localeCompare(b[0]));
-}
-
-function buildOrUpdatePlantLeaderboard(chartRef, labels, values) {
-  const cfg = {
-    type: "bar",
-    data: {
-      labels,
-      datasets: [{
-        data: values,
-        borderRadius: 8,
-        borderSkipped: false,
-        backgroundColor: (ctx) => {
-          const chart = ctx.chart;
-          const { chartArea } = chart;
-          if (!chartArea) return "#3b82f6";
-          const g = chart.ctx.createLinearGradient(chartArea.left, 0, chartArea.right, 0);
-          g.addColorStop(0, "#93c5fd");
-          g.addColorStop(1, "#2563eb");
-          return g;
-        }
-      }]
-    },
-    options: {
-      indexAxis: "y",
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { display: false },
-        datalabels: {
-          color: "#1e293b",
-          anchor: "end",
-          align: "right",
-          offset: 4,
-          formatter: (v) => fmt(v),
-          font: { family: "IBM Plex Mono", size: 10, weight: "600" }
-        }
-      },
-      scales: {
-        x: {
-          ticks: { color: "#64748b", font: { family: "IBM Plex Mono", size: 10 } },
-          grid: { color: "#edf2f7" }
-        },
-        y: {
-          ticks: { color: "#334155", font: { family: "IBM Plex Mono", size: 10 } },
-          grid: { display: false }
-        }
-      }
+    function getPlantEntries(plantTotals) {
+        return Object.entries(plantTotals || {}).map(([k, v]) => [k, Number(v) || 0]).filter(([,v]) => v > 0).sort((a, b) => (b[1] - a[1]) || a[0].localeCompare(b[0]));
     }
-  };
-  if (!chartRef) return new Chart(document.getElementById("plantLeaderboardChart"), cfg);
-  chartRef.data.labels = labels;
-  chartRef.data.datasets[0].data = values;
-  chartRef.update();
-  return chartRef;
-}
 
-function buildOrUpdatePlantDonut(chartRef, labels, values, colors) {
-  const cfg = {
-    type: "doughnut",
-    data: {
-      labels,
-      datasets: [{
-        data: values,
-        backgroundColor: colors,
-        borderWidth: 0,
-        hoverOffset: 6
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      cutout: "62%",
-      plugins: {
-        legend: { display: false },
-        datalabels: { display: false }
-      }
+    function buildOrUpdatePlantLeaderboard(chartRef, labels, values) {
+        const cfg = {
+            type: "bar",
+            data: {
+                labels,
+                datasets: [{
+                    label: 'Meters',
+                    data: values,
+                    borderRadius: { topLeft: 6, topRight: 6, bottomLeft: 0, bottomRight: 0 },
+                    backgroundColor: (ctx) => {
+                        const chart = ctx.chart;
+                        const { chartArea } = chart;
+                        if (!chartArea) return "#3b82f6";
+                        const g = chart.ctx.createLinearGradient(0, chartArea.bottom, 0, chartArea.top);
+                        g.addColorStop(0, "#3b82f6"); 
+                        g.addColorStop(1, "#10b981"); 
+                        return g;
+                    }
+                }]
+            },
+            options: {
+                indexAxis: "x", responsive: true, maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: commonTooltip,
+                    datalabels: { color: textColor(), anchor: "end", align: "top", formatter: (v) => fmt(v), font: { family: '"JetBrains Mono", monospace', size: 10, weight: "bold" } }
+                },
+                layout: { padding: { top: 25, right: 0, left: 0, bottom: 0 } },
+                scales: {
+                    x: { ticks: { color: textColor(), font: { size: 10, weight: "bold" } }, grid: { display: false } },
+                    y: { ticks: { color: textColor(), font: { size: 10 } }, grid: { color: gridColor(), borderDash: [4, 4], drawBorder: false } }
+                }
+            }
+        };
+        if (!chartRef) return new Chart(document.getElementById("plantLeaderboardChart"), cfg);
+        chartRef.data.labels = labels;
+        chartRef.data.datasets[0].data = values;
+        chartRef.options.scales.x.ticks.color = textColor();
+        chartRef.options.scales.y.grid.color = gridColor();
+        chartRef.options.scales.y.ticks.color = textColor();
+        chartRef.update();
+        return chartRef;
     }
-  };
-  if (!chartRef) return new Chart(document.getElementById("plantDonutChart"), cfg);
-  chartRef.data.labels = labels;
-  chartRef.data.datasets[0].data = values;
-  chartRef.data.datasets[0].backgroundColor = colors;
-  chartRef.update();
-  return chartRef;
-}
 
-function renderPlantSideList(entries, total, colors) {
-  if (!plantSideListEl) return;
-  if (!entries.length) {
-    plantSideListEl.innerHTML = '<li><span class="rank">-</span><span>No plant totals</span><span>0</span><span class="share">0%</span></li>';
-    return;
-  }
-  plantSideListEl.innerHTML = entries.map(([name, val], i) => {
-    const share = total > 0 ? ((val / total) * 100) : 0;
-    return `<li>
-      <span class="rank">${i + 1}</span>
-      <span><span class="dot" style="background:${colors[i]}"></span> ${name}</span>
-      <span>${fmt(val)}</span>
-      <span class="share">${share.toFixed(1)}%</span>
-    </li>`;
-  }).join("");
-}
+    function buildOrUpdatePlantDonut(chartRef, labels, values, colors) {
+        const cfg = {
+            type: "doughnut",
+            data: { labels, datasets: [{ data: values, backgroundColor: colors, borderWidth: 0, hoverOffset: 4 }] },
+            options: {
+                responsive: true, maintainAspectRatio: false, cutout: "70%",
+                plugins: { legend: { display: false }, datalabels: { display: false }, tooltip: commonTooltip }
+            }
+        };
+        if (!chartRef) return new Chart(document.getElementById("plantDonutChart"), cfg);
+        chartRef.data.labels = labels;
+        chartRef.data.datasets[0].data = values;
+        chartRef.data.datasets[0].backgroundColor = colors;
+        chartRef.update();
+        return chartRef;
+    }
 
-function toggleGraphPanels(selectedPlant) {
-  const isAllPlant = selectedPlant === "ALL";
-  if (lineTodayPanelEl) lineTodayPanelEl.style.display = isAllPlant ? "none" : "";
-  if (lineSlotPanelEl) lineSlotPanelEl.style.display = isAllPlant ? "none" : "";
-  if (plantTotalPanelEl) plantTotalPanelEl.style.display = isAllPlant ? "" : "none";
-}
+    function renderPlantSideList(entries, total, colors) {
+        if (!plantSideListEl) return;
+        if (!entries.length) { plantSideListEl.innerHTML = ''; return; }
+        plantSideListEl.innerHTML = entries.map(([name, val], i) => {
+            const share = total > 0 ? ((val / total) * 100) : 0;
+            return `<li class="flex items-center justify-between p-2.5 text-[10px] font-mono bg-white dark:bg-panel border border-slate-200 dark:border-border rounded-lg shadow-sm hover:border-primary transition-colors cursor-default">
+                <div class="flex items-center gap-2">
+                    <span class="text-slate-400 font-bold w-3">${i + 1}</span>
+                    <span class="w-2 h-2 rounded-full" style="background:${colors[i]}"></span>
+                    <span class="text-slate-700 dark:text-slate-200 font-bold">${name}</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span class="text-slate-500">${fmt(val)}</span>
+                    <span class="text-primary font-bold w-10 text-right">${share.toFixed(1)}%</span>
+                </div>
+            </li>`;
+        }).join("");
+    }
+
+    function toggleGraphPanels(selectedPlant) {
+        const isAllPlant = selectedPlant === "ALL";
+        if (lineTodayPanelEl) lineTodayPanelEl.style.display = isAllPlant ? "none" : "";
+        if (lineSlotPanelEl) lineSlotPanelEl.style.display = isAllPlant ? "none" : "";
+        if (plantTotalPanelEl) plantTotalPanelEl.style.display = isAllPlant ? "" : "none";
+    }
 
     function updateDynamicFilters(rows) {
         const selectedProject = qs.get("project") || "ALL";
@@ -645,19 +407,23 @@ function toggleGraphPanels(selectedPlant) {
         lineSel.value = lines.includes(selectedLine) ? selectedLine : "ALL";
     }
 
-async function refreshCharts() {
-  try {
-    const plant = qs.get("plant") || "{{ plant }}";
-    const isAllPlant = plant === "ALL";
-    const from = qs.get("timefrom") || "{{ timefrom }}";
-    const to = qs.get("timeto") || "{{ timeto }}";
-    const selectedProject = qs.get("project") || "ALL";
-    const selectedLine = qs.get("line") || "ALL";
-    toggleGraphPanels(plant);
-    const lineSlotHeading = document.getElementById("line-slot-heading");
-    if (lineSlotHeading && !isAllPlant) {
-      lineSlotHeading.textContent = `Line-wise Production (${toSlotHeaderLabel(from, to)})`;
-    }
+    async function refreshCharts() {
+        document.getElementById('progress-bar').style.width = '30%';
+
+        try {
+            const plant = qs.get("plant") || "{{ plant }}";
+            const isAllPlant = plant === "ALL";
+            const from = qs.get("timefrom") || "{{ timefrom }}";
+            const to = qs.get("timeto") || "{{ timeto }}";
+            const selectedProject = qs.get("project") || "ALL";
+            const selectedLine = qs.get("line") || "ALL";
+            
+            toggleGraphPanels(plant);
+            
+            const lineSlotHeading = document.getElementById("line-slot-heading");
+            if (lineSlotHeading && !isAllPlant) {
+                lineSlotHeading.innerHTML = `Line-wise Production <span class="text-[9px] text-slate-400 ml-1 uppercase">(${toSlotHeaderLabel(from, to)})</span>`;
+            }
 
             const [liveRes, breakdownRes, todayRes] = await Promise.all([
                 fetch("/api/live_total?plant=ALL", { cache: "no-store" }),
@@ -667,69 +433,50 @@ async function refreshCharts() {
 
             if (!liveRes.ok || !breakdownRes.ok || !todayRes.ok) throw new Error("Fetch failed");
 
-    const live = await liveRes.json();
-    const breakdown = await breakdownRes.json();
-    const todayBreakdown = await todayRes.json();
-    const slotRows = breakdown.rows || [];
-    const plantEntries = getPlantEntries(live.plant_totals || {});
-    const plantLabels = plantEntries.map(([k]) => k);
-    const plantValues = plantEntries.map(([,v]) => v);
-    const plantTotal = plantValues.reduce((s, v) => s + v, 0);
-    const plantColors = plantEntries.map((_, i) => `hsl(${212 + (i * 19)} 78% ${56 - Math.min(i * 2, 16)}%)`);
+            const live = await liveRes.json();
+            const breakdown = await breakdownRes.json();
+            const todayBreakdown = await todayRes.json();
+            
+            document.getElementById('progress-bar').style.width = '80%';
 
-    plantLeaderboardChart = buildOrUpdatePlantLeaderboard(plantLeaderboardChart, plantLabels, plantValues);
-    plantDonutChart = buildOrUpdatePlantDonut(plantDonutChart, plantLabels, plantValues, plantColors);
-    renderPlantSideList(plantEntries, plantTotal, plantColors);
-    document.getElementById("asof").textContent = "Last updated: " + (live.as_of || "").replace("T", " ");
+            const plantEntries = getPlantEntries(live.plant_totals || {});
+            const plantLabels = plantEntries.map(([k]) => k);
+            const plantValues = plantEntries.map(([,v]) => v);
+            const plantTotal = plantValues.reduce((s, v) => s + v, 0);
+            
+            const palette = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ef4444', '#06b6d4'];
+            const plantColors = plantEntries.map((_, i) => palette[i % palette.length]);
 
-    if (isAllPlant) {
-      if (firstLoad) {
-        hideLoading();
-        firstLoad = false;
-      }
-      return;
+            plantLeaderboardChart = buildOrUpdatePlantLeaderboard(plantLeaderboardChart, plantLabels, plantValues);
+            plantDonutChart = buildOrUpdatePlantDonut(plantDonutChart, plantLabels, plantValues, plantColors);
+            renderPlantSideList(plantEntries, plantTotal, plantColors);
+            
+            if (!isAllPlant) {
+                const rows = breakdown.rows || [];
+                updateDynamicFilters(rows);
+                
+                const filtered = rows.filter(r => (selectedProject === "ALL" || r.ProjCode === selectedProject) && (selectedLine === "ALL" || r.Line === selectedLine));
+
+                const lineMap = {};
+                filtered.forEach(r => { lineMap[r.Line] = (lineMap[r.Line] || 0) + (r.ProdQty || 0); });
+                const topLineEntries = Object.entries(lineMap).sort((a, b) => a[0].localeCompare(b[0], undefined, { numeric: true }));
+                lineChart = buildOrUpdateChart(lineChart, "lineChart", topLineEntries.map(([k])=>k), topLineEntries.map(([,v])=>v), "#f59e0b");
+
+                const todayRows = (todayBreakdown.rows || []).filter(r => (selectedProject === "ALL" || r.ProjCode === selectedProject) && (selectedLine === "ALL" || r.Line === selectedLine));
+                const lineTodayMap = {};
+                todayRows.forEach(r => { lineTodayMap[r.Line] = (lineTodayMap[r.Line] || 0) + (r.ProdQty || 0); });
+                const lineTodayEntries = Object.entries(lineTodayMap).sort((a, b) => a[0].localeCompare(b[0], undefined, { numeric: true }));
+                lineTodayChart = buildOrUpdateChart(lineTodayChart, "lineTodayChart", lineTodayEntries.map(([k])=>k), lineTodayEntries.map(([,v])=>v), "#3b82f6");
+            }
+
+            document.getElementById('progress-bar').style.width = '100%';
+            setTimeout(() => { document.getElementById('progress-bar').style.width = '0%'; }, 300);
+
+        } catch (err) {
+            console.warn("graph refresh error", err);
+            document.getElementById('progress-bar').style.width = '0%';
+        }
     }
-
-    const rows = slotRows;
-    updateDynamicFilters(rows);
-    const filtered = rows.filter(r =>
-      (selectedProject === "ALL" || r.ProjCode === selectedProject) &&
-      (selectedLine === "ALL" || r.Line === selectedLine)
-    );
-
-    const lineMap = {};
-    filtered.forEach(r => { lineMap[r.Line] = (lineMap[r.Line] || 0) + (r.ProdQty || 0); });
-    const topLineEntries = Object.entries(lineMap)
-      .sort((a, b) => (b[1] - a[1]) || a[0].localeCompare(b[0]))
-      .sort((a, b) => a[0].localeCompare(b[0], undefined, { numeric: true, sensitivity: "base" }));
-    const lineLabels = topLineEntries.map(([k]) => k);
-    const lineValues = topLineEntries.map(([,v]) => v);
-    lineChart = buildOrUpdateChart(lineChart, "lineChart", lineLabels, lineValues, "#f59e0b", false);
-
-    const todayRows = (todayBreakdown.rows || []).filter(r =>
-      (selectedProject === "ALL" || r.ProjCode === selectedProject) &&
-      (selectedLine === "ALL" || r.Line === selectedLine)
-    );
-    const lineTodayMap = {};
-    todayRows.forEach(r => { lineTodayMap[r.Line] = (lineTodayMap[r.Line] || 0) + (r.ProdQty || 0); });
-    const lineTodayEntries = Object.entries(lineTodayMap)
-      .sort((a, b) => (b[1] - a[1]) || a[0].localeCompare(b[0]))
-      .sort((a, b) => a[0].localeCompare(b[0], undefined, { numeric: true, sensitivity: "base" }));
-    const lineTodayLabels = lineTodayEntries.map(([k]) => k);
-    const lineTodayValues = lineTodayEntries.map(([,v]) => v);
-    lineTodayChart = buildOrUpdateChart(lineTodayChart, "lineTodayChart", lineTodayLabels, lineTodayValues, "#2563eb", false);
-    if (firstLoad) {
-      hideLoading();
-      firstLoad = false;
-    }
-  } catch (err) {
-    console.warn("graph refresh error", err);
-    if (firstLoad) {
-      hideLoading();
-      firstLoad = false;
-    }
-  }
-}
 
     Chart.register(ChartDataLabels);
     refreshCharts();
@@ -743,5 +490,4 @@ async function refreshCharts() {
         };
     }
 </script>
-</body>
-</html>
+{% endblock %}

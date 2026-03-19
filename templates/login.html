@@ -1,181 +1,93 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="antialiased">
 <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Login – Meter Production</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
     <script>
-        (function () {
-            const key = "pd_theme";
-            const saved = localStorage.getItem(key);
-            if (saved === "dark" || saved === "light") {
-                document.documentElement.setAttribute("data-theme", saved);
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        mono: ['"IBM Plex Mono"', 'monospace'],
+                    },
+                    colors: {
+                        brand: { 50: '#eff6ff', 500: '#3b82f6', 600: '#2563eb', 900: '#1e3a8a' }
+                    }
+                }
             }
-        })();
+        }
+        // Initialize Theme
+        if (localStorage.getItem('pd_theme') === 'dark' || (!('pd_theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
     </script>
-    <style>
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-        :root {
-            --bg:       #f4f5f7;
-            --surface:  #ffffff;
-            --border:   #e4e6ea;
-            --text:     #1c1e23;
-            --muted:    #74778a;
-            --accent:   #2563eb;
-            --danger:   #dc2626;
-            --shadow:   0 1px 3px rgba(0,0,0,.07), 0 8px 32px rgba(0,0,0,.08);
-            --radius:   12px;
-        }
-        :root[data-theme="dark"] {
-            --bg:       #0b1220;
-            --surface:  #0f172a;
-            --border:   #24344f;
-            --text:     #e2e8f0;
-            --muted:    #93a4bd;
-            --accent:   #3b82f6;
-            --danger:   #ef4444;
-            --shadow:   0 8px 28px rgba(0,0,0,.35), 0 1px 6px rgba(0,0,0,.3);
-        }
-
-        body {
-            font-family: 'DM Sans', sans-serif;
-            background: var(--bg);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .login-card {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            padding: 44px 40px 36px;
-            width: 100%;
-            max-width: 380px;
-        }
-
-        .brand {
-            margin-bottom: 28px;
-        }
-        .brand h1 {
-            font-size: 1.15rem;
-            font-weight: 600;
-            letter-spacing: -0.02em;
-            color: var(--text);
-        }
-        .brand p {
-            font-size: 0.76rem;
-            color: var(--muted);
-            margin-top: 3px;
-            font-family: 'DM Mono', monospace;
-        }
-
-        .field {
-            margin-bottom: 16px;
-        }
-        .field label {
-            display: block;
-            font-size: 0.72rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: .06em;
-            color: var(--muted);
-            margin-bottom: 6px;
-        }
-        .field input {
-            width: 100%;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 9px 13px;
-            font-family: 'DM Sans', sans-serif;
-            font-size: 0.88rem;
-            color: var(--text);
-            background: var(--bg);
-            outline: none;
-            transition: border-color .15s, box-shadow .15s;
-        }
-        .field input:focus {
-            border-color: var(--accent);
-            box-shadow: 0 0 0 3px rgba(37,99,235,.12);
-            background: var(--surface);
-        }
-
-        .error-msg {
-            display: none;
-            font-size: 0.76rem;
-            color: var(--danger);
-            background: #fef2f2;
-            border: 1px solid #fecaca;
-            border-radius: 7px;
-            padding: 8px 12px;
-            margin-bottom: 16px;
-        }
-        .error-msg.show { display: block; }
-        :root[data-theme="dark"] .error-msg {
-            background: #2f1618;
-            border-color: #7f1d1d;
-            color: #fda4af;
-        }
-
-        .btn-login {
-            width: 100%;
-            background: var(--accent);
-            color: #fff;
-            border: none;
-            border-radius: 8px;
-            padding: 10px;
-            font-family: 'DM Sans', sans-serif;
-            font-size: 0.88rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background .15s, transform .1s;
-            margin-top: 4px;
-        }
-        .btn-login:hover  { background: #1d4ed8; }
-        .btn-login:active { transform: scale(.98); }
-
-        .footer-note {
-            text-align: center;
-            font-size: 0.7rem;
-            color: var(--muted);
-            margin-top: 24px;
-        }
-    </style>
 </head>
-<body>
+<body class="bg-slate-50 dark:bg-slate-950 min-h-screen flex items-center justify-center relative overflow-hidden transition-colors duration-300">
 
-<div class="login-card">
-    <div class="brand">
-        <h1>Meter Production</h1>
-        <!-- <p>Hourly Dashboard &nbsp;·&nbsp; Sign in to continue</p> -->
-        <p>Hour by Hour Dashboard</p>
+    <div class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-brand-500/20 rounded-full blur-[100px] pointer-events-none"></div>
+    <div class="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-emerald-500/20 rounded-full blur-[100px] pointer-events-none"></div>
+
+    <div class="w-full max-w-md p-8 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.2)] border border-slate-200 dark:border-slate-800 relative z-10">
+        
+        <div class="text-center mb-8">
+            <div class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-brand-500 text-white mb-4 shadow-lg shadow-brand-500/30">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="2" y="3" width="20" height="14" rx="2"></rect>
+                    <path d="M8 21h8M12 17v4"></path>
+                </svg>
+            </div>
+            <h1 class="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Meter Production</h1>
+            <p class="text-sm text-slate-500 dark:text-slate-400 mt-2 font-mono">Hour by Hour Dashboard</p>
+        </div>
+
+        {% if error %}
+        <div class="mb-6 p-4 rounded-lg bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 flex items-center gap-3 text-red-600 dark:text-red-400 text-sm font-medium">
+            <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+            {{ error }}
+        </div>
+        {% endif %}
+
+        <form method="post" action="/login" class="space-y-5">
+            <div>
+                <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Username</label>
+                <input type="text" name="username" autocomplete="username" placeholder="Enter username" required autofocus value="{{ username or '' }}"
+                       class="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Password</label>
+                <input type="password" name="password" autocomplete="current-password" placeholder="••••••••" required
+                       class="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all">
+            </div>
+            <button type="submit" class="w-full py-3.5 px-4 bg-brand-600 hover:bg-brand-500 text-white rounded-xl font-semibold shadow-md hover:shadow-lg transition-all active:scale-[0.98] flex justify-center items-center gap-2">
+                Sign In
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+            </button>
+        </form>
+
+        <button onclick="toggleTheme()" class="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+            <svg class="w-5 h-5 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+            <svg class="w-5 h-5 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+        </button>
     </div>
 
-    {% if error %}
-    <div class="error-msg show">{{ error }}</div>
-    {% endif %}
-
-    <form method="post" action="/login">
-        <div class="field">
-            <label>Username</label>
-            <input type="text" name="username" autocomplete="username"
-                   placeholder="Enter username" required autofocus
-                   value="{{ username or '' }}">
-        </div>
-        <div class="field">
-            <label>Password</label>
-            <input type="password" name="password" autocomplete="current-password"
-                   placeholder="Enter password" required>
-        </div>
-        <button type="submit" class="btn-login">Sign In</button>
-    </form>
-
-    <!-- <div class="footer-note">Meter Production Dashboard</div> -->
-</div>
-
+    <script>
+        function toggleTheme() {
+            const html = document.documentElement;
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                localStorage.setItem('pd_theme', 'light');
+            } else {
+                html.classList.add('dark');
+                localStorage.setItem('pd_theme', 'dark');
+            }
+        }
+    </script>
 </body>
 </html>
