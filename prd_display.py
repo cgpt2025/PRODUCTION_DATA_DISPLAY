@@ -33,7 +33,6 @@ SA_PWD_DEFAULT = "pass@123"
 SA_PWD_RCP     = "genus_PROD"
 
 
-# ─── Helpers ──────────────────────────────────────────────────────────
 
 def current_hour_slot():
     """Return (timefrom, timeto) strings for the current hour, e.g. ('10:00', '11:00')."""
@@ -57,7 +56,6 @@ def hour_slot_label(h):
     return f"{h:02d}:00 – {(h+1)%24:02d}:00"
 
 
-# ─── DB Queries ────────────────────────────────────────────────────────
 
 def get_projects_for_plant(plant_key, selected_date):
     cfg = PLANTS[plant_key]
@@ -168,7 +166,6 @@ def get_hourly_all_plants(selected_date, dt_from, dt_to):
     return all_rows
 
 
-# ─── Auth ──────────────────────────────────────────────────────────────
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -188,7 +185,6 @@ def logout():
     return redirect(url_for("login"))
 
 
-# ─── Main Dashboard ────────────────────────────────────────────────────
 
 @app.route("/")
 def dashboard():
@@ -199,7 +195,6 @@ def dashboard():
 
     selected_date = date.today()
 
-    # Default to current hour slot if no time params provided
     cur_from, cur_to = current_hour_slot()
     raw_from = request.args.get("timefrom", cur_from)
     raw_to   = request.args.get("timeto",   cur_to)
@@ -213,7 +208,6 @@ def dashboard():
         dt_from = datetime.combine(selected_date, dtime(0, 0))
         dt_to   = datetime.combine(selected_date, dtime(23, 0))
 
-    # For AJAX table requests (legacy from old index)
     if request.args.get("ajax") == "1":
         if plant == "ALL":
             rows = get_hourly_all_plants(selected_date, dt_from, dt_to)
@@ -230,7 +224,6 @@ def dashboard():
             r["Slot"] = hour_slot_label(r["Hour"])
         return jsonify({"rows": rows})
 
-    # Normal render — pass minimal data, JS fetches the table via API
     raw_project = request.args.get("project", "ALL")
     raw_line = request.args.get("line", "ALL")
 
@@ -249,7 +242,6 @@ def dashboard():
     )
 
 
-# ─── API: Breakdown (used by new index.html) ────────────────────────────
 
 @app.route("/filter")
 def filter_page():
@@ -338,7 +330,6 @@ def api_breakdown():
     return jsonify({"rows": rows})
 
 
-# ─── API: Live total ────────────────────────────────────────────────────
 
 @app.route("/api/live_total")
 def api_live_total():
@@ -374,7 +365,6 @@ def api_live_total():
     })
 
 
-# ─── Legacy routes (kept working) ──────────────────────────────────────
 
 @app.route("/hourly")
 def index():

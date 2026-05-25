@@ -61,7 +61,6 @@
       padding: 28px 32px;
     }
 
-    /* TOP BAR */
 
     .topbar {
       display: flex;
@@ -85,7 +84,6 @@
       font-family: "DM Mono", monospace;
     }
 
-    /* CONTROLS */
 
     .controls {
       display: flex;
@@ -134,7 +132,6 @@
       cursor: pointer;
     }
 
-    /* Logout */
 
     .btn-logout {
       font-size: 0.75rem;
@@ -203,7 +200,6 @@
     }
     .pm-item.danger { color: #ef4444; }
 
-    /* STATS PILLS */
 
     .stats-row {
       display: flex;
@@ -231,7 +227,6 @@
       font-family: "DM Mono", monospace;
     }
 
-    /* TABLE CARD */
 
     .table-card {
       background: var(--surface);
@@ -389,7 +384,6 @@
       font-size: 0.84rem;
     }
 
-    /* SORT STATUS BAR */
 
     .sort-bar {
       display: none;
@@ -406,7 +400,6 @@
       font-weight: 500;
     }
 
-    /* EMPTY STATE */
 
     .empty-state {
       text-align: center;
@@ -424,7 +417,6 @@
       margin-top: 4px;
     }
 
-    /* FOOTER */
 
     .footer {
       margin-top: 14px;
@@ -436,7 +428,6 @@
       gap: 6px;
     }
 
-    /* LOADING OVERLAY + PROGRESS BAR (unchanged) */
 
     #progress-bar {
       display: none;
@@ -502,10 +493,8 @@
 </head>
 <body>
 
-<!-- PROGRESS BAR -->
 <div id="progress-bar"></div>
 
-<!-- LOADING OVERLAY -->
 <div id="loading-overlay">
   <div class="loader-card">
     <div class="spinner"></div>
@@ -513,7 +502,6 @@
   </div>
 </div>
 
-<!-- TOP BAR -->
 <div class="topbar">
   <div class="topbar-left">
     <h1>Meter Production — Hour by Hour</h1>
@@ -523,14 +511,12 @@
   </div>
 
   <form method="get" class="controls" id="main-form">
-    <!-- Date -->
     <div class="ctrl-group">
       <label>Date</label>
       <div class="ctrl-divider"></div>
       <input type="date" name="date" value="{{ selecteddate }}" onchange="this.form.submit()">
     </div>
 
-    <!-- Time From (minute support) -->
     <div class="ctrl-group">
       <label>From</label>
       <div class="ctrl-divider"></div>
@@ -541,7 +527,6 @@
              onchange="this.form.submit()">
     </div>
 
-    <!-- Time To (minute support) -->
     <div class="ctrl-group">
       <label>To</label>
       <div class="ctrl-divider"></div>
@@ -552,21 +537,17 @@
              onchange="this.form.submit()">
     </div>
 
-    <!-- Plant -->
     <div class="ctrl-group">
       <label>Plant</label>
       <div class="ctrl-divider"></div>
       <select name="plant" onchange="this.form.submit()">
-        <!-- ALL PLANTS OPTION -->
         <option value="ALL" {% if plant == "ALL" %}selected{% endif %}>All Plants</option>
-        <!-- END ALL PLANTS -->
         {% for p in plant_names %}
           <option value="{{ p }}" {% if p == plant %}selected{% endif %}>{{ p }}</option>
         {% endfor %}
       </select>
     </div>
 
-    <!-- Logout -->
     <div class="profile-menu">
       <button type="button" class="profile-btn" id="profile-btn" aria-label="Profile menu" aria-expanded="false">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
@@ -596,7 +577,6 @@
   </form>
 </div>
 
-<!-- STATS PILLS -->
 <div class="stats-row">
   <div class="stat-pill">
     Rows: <strong>{{ rows|length }}</strong>
@@ -609,7 +589,6 @@
   </div>
 </div>
 
-<!-- TABLE -->
 <div class="table-card">
   <div class="table-scroll">
     <table id="prod-table">
@@ -688,9 +667,7 @@
   <span>Meter Production Dashboard</span>
 </div>
 
-<!-- SCRIPTS -->
 <script>
-  // LOADING + PROGRESS
   const overlay = document.getElementById("loading-overlay");
   const bar = document.getElementById("progress-bar");
   const form = document.getElementById("main-form");
@@ -736,7 +713,6 @@
     }, 400);
   });
 
-  // SORTING
   const table = document.getElementById("prod-table");
   const tbody = document.getElementById("table-body");
   const headers = Array.from(table.querySelectorAll("thead th"));
@@ -758,7 +734,6 @@
       return parseFloat(txt.replace(/,/g, "")) || 0;
     }
     if (type === "time") {
-      // Expect "HH:MM – HH:MM"
       const m = txt.match(/^(\d{2}):(\d{2})/);
       if (!m) return 0;
       return parseInt(m[1], 10) * 60 + parseInt(m[2], 10);

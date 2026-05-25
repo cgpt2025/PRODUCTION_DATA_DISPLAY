@@ -121,34 +121,29 @@
     const gridColor = () => isDark() ? '#1e293b' : '#f1f5f9'; 
     const textColor = () => isDark() ? '#94a3b8' : '#64748b'; 
 
-    // --- Direct PDF Export (html2pdf) ---
     async function exportPDF() {
         const wrapper = document.getElementById('pdf-wrapper');
         const btn = document.getElementById('export-pdf-btn');
         const originalText = btn.innerHTML;
         btn.innerHTML = `<svg class="animate-spin w-3.5 h-3.5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Generating...`;
 
-        // 1. Force Light Mode & Setup UI
         const html = document.documentElement;
         const wasDark = html.classList.contains('dark');
         if (wasDark) {
             html.classList.remove('dark');
-            updateChartColorsForPrint(false); // Force charts to render light mode colors
+            updateChartColorsForPrint(false); 
         }
 
         document.getElementById('pdf-header').style.display = 'block';
         document.querySelectorAll('.no-pdf').forEach(el => el.style.display = 'none');
 
-        // 2. Set Dynamic Timestamp
         const now = new Date();
         const dateStr = now.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
         const timeStr = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
         document.getElementById('pdf-timestamp').innerHTML = `<strong>Report up to:</strong> ${dateStr}, ${timeStr}`;
 
-        // Wait for DOM & Canvas to redraw
         await new Promise(r => setTimeout(r, 300));
 
-        // 3. Generate PDF (A3 Landscape fits Dashboards beautifully)
         const opt = {
             margin:       0.3,
             filename:     `Production_Analytics_${ACTIVE_PLANT}_${new Date().getTime()}.pdf`,
@@ -160,7 +155,6 @@
         try { await html2pdf().set(opt).from(wrapper).save(); } 
         catch (e) { console.error("PDF Generation Error", e); }
 
-        // 4. Restore UI & Dark Mode
         document.getElementById('pdf-header').style.display = 'none';
         document.querySelectorAll('.no-pdf').forEach(el => el.style.display = '');
         if (wasDark) {
@@ -187,7 +181,6 @@
                     if (chart.options.scales.y.ticks) chart.options.scales.y.ticks.color = textC;
                 }
             }
-            // Update Datalabels on Leaderboard
             if (chart.config.type === 'bar' && chart.options.plugins && chart.options.plugins.datalabels) {
                 chart.options.plugins.datalabels.color = (ctx) => {
                     const vals = (ctx.chart.data.datasets[0].data || []).map(v => Number(v) || 0);
@@ -199,7 +192,6 @@
         });
     }
 
-    // Custom Donut Center Text Plugin
     const centerTextPlugin = {
         id: 'centerText',
         beforeDraw: function(chart) {

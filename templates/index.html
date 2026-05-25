@@ -212,14 +212,12 @@
     const upArrowSVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 15l-6-6-6 6"/></svg>`;
     const downArrowSVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>`;
 
-    // --- Direct PDF Export (html2pdf) ---
     async function exportPDF() {
         const wrapper = document.getElementById('pdf-wrapper');
         const btn = document.getElementById('export-pdf-btn');
         const originalText = btn.innerHTML;
         btn.innerHTML = `<svg class="animate-spin w-3.5 h-3.5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Generating...`;
 
-        // 1. Force Light Mode & Show Print Header
         const html = document.documentElement;
         const wasDark = html.classList.contains('dark');
         if (wasDark) html.classList.remove('dark');
@@ -227,20 +225,16 @@
         document.getElementById('pdf-header').style.display = 'block';
         document.querySelectorAll('.no-pdf').forEach(el => el.style.display = 'none');
 
-        // 2. Expand Table (Remove scroll so entire table prints)
         const tblCont = document.getElementById('table-scroll-container');
         if (tblCont) tblCont.classList.remove('max-h-[500px]', 'overflow-y-auto');
 
-        // 3. Set Dynamic Timestamp
         const now = new Date();
         const dateStr = now.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
         const timeStr = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
         document.getElementById('pdf-timestamp').innerHTML = `<strong>Report up to:</strong> ${dateStr}, ${timeStr}`;
 
-        // Wait for DOM
         await new Promise(r => setTimeout(r, 300));
 
-        // 4. Generate PDF
         const opt = {
             margin:       0.4,
             filename:     `Production_Breakdown_${ACTIVE_PLANT}_${new Date().getTime()}.pdf`,
@@ -252,7 +246,6 @@
         try { await html2pdf().set(opt).from(wrapper).save(); } 
         catch (e) { console.error("PDF Generation Error", e); }
 
-        // 5. Restore UI & Dark Mode
         document.getElementById('pdf-header').style.display = 'none';
         document.querySelectorAll('.no-pdf').forEach(el => el.style.display = '');
         if (tblCont) tblCont.classList.add('max-h-[500px]', 'overflow-y-auto');
@@ -323,9 +316,6 @@
             const rowsToday = dataToday.rows || [];
             const rowsSlot = dataSlot.rows || [];
 
-            // ==========================================
-            // AI INSIGHTS GENERATION ENGINE (20 Variations)
-            // ==========================================
             const insightsList = [];
             const totalToday = rowsToday.reduce((sum, r) => sum + r.ProdQty, 0);
             const globalVel = rowsSlot.reduce((sum, r) => sum + r.ProdQty, 0);
@@ -372,7 +362,6 @@
                 const topLineTodayObj = getTopObj(lineToday);
                 const topLineHourObj = getTopObj(lineSlot);
 
-                // 1. Forecast Insight
                 const now = new Date();
                 let endOfShift = new Date(now);
                 if (now.getHours() >= 8) endOfShift.setDate(now.getDate() + 1);
@@ -382,100 +371,82 @@
                     insightsList.push({ text: `At our current production velocity of <strong class="text-slate-900 dark:text-white">${fmt(globalVel)} meters/hr</strong>, we are projected to hit <strong class="text-primary font-mono">${fmt(Math.round(totalToday + (globalVel * hrsRemaining)))} total meters</strong> by shift end.` });
                 }
 
-                // 2. Anomaly Insight
                 const anomalousLines = Object.keys(lineToday).filter(k => !lineSlot[k]);
                 if (anomalousLines.length > 0) {
                     insightsList.push({ text: `<span class="text-red-500 font-bold">Anomaly Detected:</span> <strong>${anomalousLines.length} line(s)</strong> (including ${anomalousLines[0]}) have reported 0 production this hour after running earlier today.` });
                 }
 
-                // 3. Surge Insight
                 if (topProjHourVol > 0 && globalVel > 0) {
                     insightsList.push({ text: `<span class="text-success font-bold">Surge Alert:</span> Project <strong>${topProjHour}</strong> is moving fast, accounting for <strong class="text-primary font-mono">${Math.round((topProjHourVol / globalVel) * 100)}%</strong> of all production this hour.` });
                 }
 
-                // 4. Top Plant Hour
                 if (topPlantHourVol > 0 && globalVel > 0) {
                     insightsList.push({ text: `<strong>${topPlantHour}</strong> is carrying the load this hour, contributing <strong class="text-primary font-mono">${Math.round((topPlantHourVol / globalVel) * 100)}%</strong> of our live production.` });
                 }
 
-                // 5. Active Lines Overall
                 if (activeLinesCount > 0) {
                     insightsList.push({ text: `We currently have <strong>${activeLinesCount} lines</strong> actively producing meters across our facilities this hour.` });
                 }
 
-                // 6. Top Line Today
                 if (topLineTodayObj.val > 0) {
                     insightsList.push({ text: `<strong>Line ${topLineTodayObj.name}</strong> at <strong>${topLineTodayObj.plant}</strong> is our top performer today with <strong class="text-primary font-mono">${fmt(topLineTodayObj.val)} meters</strong> produced.` });
                 }
 
-                // 7. Top Line Hour
                 if (topLineHourObj.val > 0) {
                     insightsList.push({ text: `<strong>Line ${topLineHourObj.name}</strong> at <strong>${topLineHourObj.plant}</strong> is leading the charge this hour with <strong class="text-primary font-mono">${fmt(topLineHourObj.val)} meters</strong>.` });
                 }
 
-                // 8. Top Project Today
                 if (topProjTodayVol > 0 && totalToday > 0) {
                     insightsList.push({ text: `Project <strong>${topProjToday}</strong> dominates our daily volume, making up <strong class="text-primary font-mono">${Math.round((topProjTodayVol / totalToday) * 100)}%</strong> of all production today.` });
                 }
 
-                // 9. Top Plant Today
                 if (topPlantTodayVol > 0 && totalToday > 0) {
                     insightsList.push({ text: `<strong>${topPlantToday}</strong> has produced the most meters today, accounting for <strong class="text-primary font-mono">${Math.round((topPlantTodayVol / totalToday) * 100)}%</strong> of our total volume.` });
                 }
 
-                // 10. Milestone Approaching
                 const nextMilestone = Math.ceil((totalToday + 1) / 10000) * 10000;
                 const diff = nextMilestone - totalToday;
                 if (diff > 0 && diff < 5000) {
                     insightsList.push({ text: `We are only <strong class="text-success font-mono">${fmt(diff)} meters</strong> away from hitting our next <strong>${fmt(nextMilestone)}-meter</strong> production milestone!` });
                 }
 
-                // 11. Average Line Output
                 if (activeLinesCount > 0 && globalVel > 0) {
                     insightsList.push({ text: `Our active lines are currently averaging <strong class="text-slate-900 dark:text-white">${fmt(Math.round(globalVel / activeLinesCount))} meters per hour</strong>.` });
                 }
 
-                // 12. Plant Status
                 const totalPlantsToday = new Set(rowsToday.map(r=>r.Plant)).size;
                 if (activePlants.size === totalPlantsToday && activePlants.size > 1) {
                     insightsList.push({ text: `All plants are online! We have production flowing seamlessly from every facility this hour.` });
                 }
 
-                // 13. Time Context
                 const timeStr = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
                 insightsList.push({ text: `As of <strong>${timeStr}</strong>, our total production stands at a solid <strong class="text-primary font-mono">${fmt(totalToday)} meters</strong>.` });
 
-                // 14. Variety/Diversity
                 const uniqueProjsSlot = Object.keys(projSlot).length;
                 if (uniqueProjsSlot > 1) {
                     insightsList.push({ text: `Our production floor is currently manufacturing <strong>${uniqueProjsSlot} unique meter models</strong> simultaneously.` });
                 }
 
-                // 15. Specific Project Focus
                 if (topProjHour && linesOnProj[topProjHour]) {
                     insightsList.push({ text: `We are currently focusing heavily on <strong>${topProjHour}</strong>, with <strong>${linesOnProj[topProjHour].size} active lines</strong> manufacturing it right now.` });
                 }
 
-                // 16. Steady Production
                 if (globalVel > 0) {
                     insightsList.push({ text: `Production is steady. We've successfully produced <strong class="text-primary font-mono">${fmt(globalVel)} meters</strong> in the last hour across <strong>${activePlants.size} active plants</strong>.` });
                 }
 
-                // 17. Diverse Plant
                 let mostDiversePlant = "", maxDiverse = 0;
                 Object.entries(plantProjSet).forEach(([p, set]) => { if(set.size > maxDiverse) { maxDiverse = set.size; mostDiversePlant = p; } });
                 if (maxDiverse > 1) {
                     insightsList.push({ text: `<strong>${mostDiversePlant}</strong> is currently manufacturing the widest variety of projects (<strong>${maxDiverse} different models</strong> active).` });
                 }
 
-                // 18. Lowest Plant Hour (but > 0)
                 let quietestPlant = "", minVol = Infinity;
                 Object.entries(plantSlot).forEach(([p, v]) => { if(v > 0 && v < minVol) { minVol = v; quietestPlant = p; } });
                 if (quietestPlant && minVol < (globalVel / activePlants.size / 2)) {
                     insightsList.push({ text: `<strong>${quietestPlant}</strong> is currently our quietest active facility, contributing <strong class="text-slate-900 dark:text-white">${Math.round((minVol / globalVel) * 100)}%</strong> of this hour's production.` });
                 }
 
-                // 19. Utilization
                 if (topPlantHour) {
                     const linesTopToday = Object.values(lineToday).filter(l => l.plant === topPlantHour).length;
                     const linesTopSlot = Object.values(lineSlot).filter(l => l.plant === topPlantHour).length;
@@ -484,20 +455,17 @@
                     }
                 }
 
-                // 20. Total Inactive Lines Check
                 const inactiveCount = totalUniqueLinesToday - activeLinesCount;
                 if (inactiveCount > 0) {
                     insightsList.push({ text: `We currently have <strong>${inactiveCount} line(s)</strong> resting or offline this hour out of the ${totalUniqueLinesToday} that ran today.` });
                 }
 
-                // Shuffle the insights to keep it dynamic
                 for (let i = insightsList.length - 1; i > 0; i--) {
                     const j = Math.floor(Math.random() * (i + 1));
                     [insightsList[i], insightsList[j]] = [insightsList[j], insightsList[i]];
                 }
             }
 
-            // Ticker Logic (10 seconds, text-only fade)
             if (window.insightTicker) clearInterval(window.insightTicker);
             let currentInsightIdx = 0;
             const insightEl = document.getElementById("dynamic-insight");
@@ -520,10 +488,8 @@
                     window.insightTicker = setInterval(rotateInsight, 10000); 
                 }
             }
-            // ==========================================
 
 
-            // Top Projects Pillbox
             const projMap = {};
             rowsToday.forEach(r => projMap[r.ProjCode] = (projMap[r.ProjCode]||0) + r.ProdQty);
             const topProjs = Object.entries(projMap).sort((a,b)=>b[1]-a[1]).slice(0,3);
@@ -558,7 +524,6 @@
                 const vel = rowsSlot.filter(r => r.Plant === p).reduce((sum, r) => sum + r.ProdQty, 0);
                 document.getElementById(`vel-${p}`).innerText = `↑ ${fmt(vel)} this hr`;
 
-                // Gradient Sparklines
                 const pRows = rowsToday.filter(r => r.Plant === p);
                 const hourlyMap = {};
                 pRows.forEach(r => hourlyMap[r.Hour] = (hourlyMap[r.Hour]||0) + r.ProdQty);

@@ -233,7 +233,6 @@
   <div class="plant-label" id="plant-label"></div>
 
   <div class="big-number" id="counter">
-    <!-- digits injected via JS -->
   </div>
 
   <div class="meta">
@@ -289,7 +288,7 @@
 
     function tick(now) {
       const t = Math.min(1, (now - startTime) / duration);
-      const eased = 1 - Math.pow(1 - t, 3);  // ease-out
+      const eased = 1 - Math.pow(1 - t, 3);  
       const val = Math.round(start + diff * eased);
       renderDigits(val);
       if (t < 1) requestAnimationFrame(tick);
@@ -338,7 +337,6 @@
     fetchTotal();
   });
 
-  // Initial state
   renderDigits(0);
   fetchTotal();
   setInterval(fetchTotal, AUTO_REFRESH_MS);
